@@ -10,6 +10,10 @@ A comprehensive R analysis pipeline to validate the "Remote Work Paradox" hypoth
 
 ### Reproduce Analysis in 3 Steps
 
+#### Step 0: Prepare Your Data
+- Place your survey CSV file as `vector_survey_responses.csv` in this directory
+- Or copy the example: `cp vector_survey_responses_example.csv vector_survey_responses.csv` to test the pipeline
+
 #### Step 1: Install Dependencies (One Time Only)
 ```bash
 Rscript --vanilla install_dependencies.R
@@ -61,13 +65,15 @@ The analysis uses **relative importance analysis** (LMG metric) to decompose the
 ```
 vector_analysis/
 ├── README.md                              # This file
-├── vector_survey_responses.csv            # Raw survey data
+├── vector_survey_responses.csv            # Your survey data (not tracked by git)
+├── vector_survey_responses_example.csv    # Example data for testing pipeline
+├── .gitignore                             # Git ignore rules
 ├── install_dependencies.R                 # Installs all R packages
 ├── data_diagnostics.R                     # Data quality validation
 ├── run_all_analyses.R                     # Master pipeline script
 ├── vector_comprehensive_analysis.R        # Main analysis (Skills vs Outcomes)
 ├── vector_subgroup_analysis.R             # Demographic subgroup testing
-└── output/                                # All generated files
+└── output/                                # All generated files (not tracked by git)
     ├── correlation_heatmap.png
     ├── relative_importance_barplot.png
     ├── subgroup_top_predictors_comparison.png
@@ -124,10 +130,19 @@ The core finding is a **ranked list** of predictors ordered by their contributio
 
 ## Technical Details
 
-### Data Requirements
+### Data Format
 - **Input**: `vector_survey_responses.csv` with columns 8-18 containing Likert-scale responses (1-5)
 - **Minimum Sample**: n ≥ 30 for basic analysis, n ≥ 50 recommended
 - **Missing Data**: Analyses use complete cases only
+
+### Using the Example Data
+To test the pipeline with sample data:
+```bash
+cp vector_survey_responses_example.csv vector_survey_responses.csv
+Rscript --vanilla run_all_analyses.R
+```
+
+The example file contains 10 rows of realistic test data across diverse demographics and roles. After testing, replace with your actual survey data.
 
 ### Variables Mapping
 ```

@@ -1,0 +1,11 @@
+Timestamp,Email,Career Stage,Academic Background,Country,Current Role,Years Experience,Q1: Technical Skills,Q2: Communication Skills,Q3: Leadership Skills,Q4: Time Management,Q5: Network Size,Q6: Network Quality,Q7: Network Access,Q8: Overall Career Impact,Q9: Resume Competitiveness,Q10: Job/Promotion Success,Q11: Leadership Role Advancement
+2026-02-01 10:30:00,person1@example.com,Professional,Computer Science,United States,Software Engineer,5,4,3,5,4,3,4,3,4,4,5,4
+2026-02-01 11:15:00,person2@example.com,Professional,Business,Canada,Product Manager,7,3,5,4,5,5,4,5,5,4,4,4
+2026-02-01 12:00:00,person3@example.com,Student,Engineering,India,Data Science Intern,1,5,2,2,3,2,2,2,3,3,2,3
+2026-02-01 13:45:00,person4@example.com,Professional,Economics,UK,Analyst,3,3,4,3,4,4,3,4,3,4,4,3
+2026-02-01 14:30:00,person5@example.com,Professional,Computer Science,Singapore,App Developer,6,4,3,4,5,4,3,4,4,5,5,4
+2026-02-01 15:00:00,person6@example.com,Student,Philosophy,Global South,ML Engineering Student,2,4,3,3,4,3,2,3,4,4,3,4
+2026-02-01 16:20:00,person7@example.com,Professional,Mathematics,Australia,Data Scientist,4,5,4,4,4,5,4,5,5,5,5,5
+2026-02-01 17:10:00,person8@example.com,Professional,Business,USA,Program Manager,8,3,4,5,5,4,5,4,4,5,5,4
+2026-02-01 18:00:00,person9@example.com,Student,Engineering,Brazil,Web Dev Student,1,4,4,3,3,2,3,2,3,4,3,2
+2026-02-02 09:30:00,person10@example.com,Professional,Computer Science,Japan,Cloud Engineer,5,5,3,4,5,4,4,4,5,5,5,4
