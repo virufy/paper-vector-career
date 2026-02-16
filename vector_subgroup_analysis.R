@@ -37,49 +37,61 @@ df[target_cols] <- lapply(df[target_cols], function(x) as.numeric(as.character(x
 df_clean <- df[complete.cases(df[target_cols]), ]
 
 # ==============================================================================
-# 2. CREATE DEMOGRAPHIC GROUPS
+# 2. CREATE DEMOGRAPHIC GROUPS (WITH IMPROVED RESILIENT MAPPING)
 # ==============================================================================
 
 cat("\n=== CREATING DEMOGRAPHIC SEGMENTS ===\n")
 
-# Extract demographic columns (adjust indices based on your actual data structure)
-# Column 3: Career stage
-# Column 5: Country
-# Column 6: Role
+# Improved mapping strategy: Use column names instead of indices for resilience
+# After reading the CSV, the actual columns are:
+# Column 4: Career stage when volunteered
+# Column 6: Role at Virufy
+# Column 25: Countries of residence (note: column 5 is empty, actual data is in 25)
 
-# A. TECH vs NON-TECH
-tech_keywords <- "App Dev|Web Dev|ML Engineering|Data Scientist|Cloud|IT|Engineer|Developer"
+# A. TECH vs NON-TECH (expanded keywords for better coverage)
+tech_keywords <- "App Dev|Web Dev|Developer|ML Engineering|Data Scientist|Cloud|IT|Engineer|Programming|Technical|Data Analysis|Software|AI|Machine Learning"
+nontech_keywords <- "HR|Marketing|Operations|Legal|Admin|Management|Communications|Design|Product|Business|Outreach|Research|Writing|Grant"
+
 df_clean$Role_Type <- ifelse(
   grepl(tech_keywords, df_clean[[6]], ignore.case = TRUE), 
-  "Tech", 
-  "Non-Tech"
+  "Tech",
+  ifelse(grepl(nontech_keywords, df_clean[[6]], ignore.case = TRUE),
+         "Non-Tech",
+         NA)  # Unclassified roles as NA
 )
 
-# B. STUDENT vs PROFESSIONAL
+# B. STUDENT vs PROFESSIONAL (expanded student keywords)
 df_clean$Career_Stage <- ifelse(
-  grepl("student", df_clean[[3]], ignore.case = TRUE), 
+  grepl("student|undergraduate|master|doctoral|phd|graduate", df_clean[[4]], ignore.case = TRUE), 
   "Student", 
   "Professional"
 )
 
-# C. GEOGRAPHY (Global South vs West)
-west_keywords <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore"
+# C. GEOGRAPHY (Global West vs South) - Use column 25 which has the country data
+# Countries data includes: Canada, Pakistan, Japan, United Arab Emirates, USA, etc.
+west_keywords <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore|Germany|France|Switzerland|Netherlands|Belgium|Austria|South Korea|New Zealand|Sweden|Norway|Denmark"
 df_clean$Geography <- ifelse(
-  grepl(west_keywords, df_clean[[5]], ignore.case = TRUE),
+  grepl(west_keywords, df_clean[[25]], ignore.case = TRUE),
   "Global_West",
   "Global_South"
 )
 
-# Print segment sizes
-cat(sprintf("\nTech: %d | Non-Tech: %d\n", 
-            sum(df_clean$Role_Type == "Tech"), 
-            sum(df_clean$Role_Type == "Non-Tech")))
-cat(sprintf("Student: %d | Professional: %d\n", 
-            sum(df_clean$Career_Stage == "Student"), 
-            sum(df_clean$Career_Stage == "Professional")))
-cat(sprintf("Global West: %d | Global South: %d\n\n", 
-            sum(df_clean$Geography == "Global_West"), 
-            sum(df_clean$Geography == "Global_South")))
+# Print segment sizes with clarity
+cat("\n--- Role Type Distribution ---\n")
+tech_count <- sum(df_clean$Role_Type == "Tech", na.rm = TRUE)
+nontech_count <- sum(df_clean$Role_Type == "Non-Tech", na.rm = TRUE)
+unclassified_count <- sum(is.na(df_clean$Role_Type))
+cat(sprintf("Tech: %d | Non-Tech: %d | Unclassified: %d\n\n", tech_count, nontech_count, unclassified_count))
+
+cat("--- Career Stage Distribution ---\n")
+student_count <- sum(df_clean$Career_Stage == "Student", na.rm = TRUE)
+prof_count <- sum(df_clean$Career_Stage == "Professional", na.rm = TRUE)
+cat(sprintf("Student: %d | Professional: %d\n\n", student_count, prof_count))
+
+cat("--- Geography Distribution ---\n")
+west_count <- sum(df_clean$Geography == "Global_West", na.rm = TRUE)
+south_count <- sum(df_clean$Geography == "Global_South", na.rm = TRUE)
+cat(sprintf("Global West: %d | Global South: %d\n\n", west_count, south_count))
 
 # ==============================================================================
 # 3. SUBGROUP RELATIVE IMPORTANCE ANALYSIS
@@ -127,6 +139,13 @@ analyze_subgroup <- function(data, group_name) {
     Contribution = rel_imp$lmg * 100
   )
   results <- results[order(-results$Contribution), ]
+  
+  # Add Status column for scientific integrity labeling
+  # Robust (n>=30): Confident findings
+  # Exploratory/Preliminary (15<=n<30): Requires replication
+  results$Status <- ifelse(nrow(data) >= 30, 
+                           "Robust", 
+                           "Exploratory/Preliminary")
   
   # Print top 3
   cat("\nTop 3 Predictors:\n")
@@ -264,8 +283,10 @@ if(length(unique(df_clean$Career_Stage)) > 1) {
 
 if(length(all_subgroup_results) > 0) {
   combined_results_export <- do.call(rbind, all_subgroup_results)
+  rownames(combined_results_export) <- NULL  # Reset row names for clean export
   write.csv(combined_results_export, "output/subgroup_analysis_results.csv", row.names = FALSE)
-  cat("\nSubgroup results exported to: output/subgroup_analysis_results.csv\n")
+  cat("\nSubgroup results exported to: output/subgroup_analysis_results.csv")
+  cat("\nNote: Results marked 'Exploratory/Preliminary' require replication with larger sample.\n")
 }
 
 cat("\nAdvanced subgroup analysis complete!\n")
