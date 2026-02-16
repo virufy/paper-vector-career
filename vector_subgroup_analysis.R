@@ -147,14 +147,32 @@ analyze_subgroup <- function(data, group_name) {
                            "Robust", 
                            "Exploratory/Preliminary")
   
+  # Calculate statistical power
+  n_subgroup <- length(outcome)
+  n_predictors <- 7
+  r_squared_subgroup <- summary(model)$r.squared
+  effect_size_f2 <- ifelse(r_squared_subgroup < 1, 
+                           r_squared_subgroup / (1 - r_squared_subgroup), 1.0)
+  df_residual <- n_subgroup - n_predictors - 1
+  f_crit <- qf(0.95, n_predictors, df_residual)
+  lambda <- sqrt(n_subgroup * effect_size_f2)
+  power <- max(0, min(1, 1 - pf(f_crit, n_predictors, df_residual, lambda)))
+  
   # Print top 3
   cat("\nTop 3 Predictors:\n")
   for(i in 1:min(3, nrow(results))) {
-    cat(sprintf("  %d. %s: %.1f%%\n", i, results$Variable[i], results$Contribution[i]))
+    status_label <- results$Status[i]
+    power_pct <- power * 100
+    cat(sprintf("  %d. %s: %.1f%% (Status: %s, Power: %.0f%%)\n", 
+                i, results$Variable[i], results$Contribution[i],
+                status_label, power_pct))
   }
   
-  cat(sprintf("\nModel R²: %.3f\n", summary(model)$r.squared))
-  cat("\n")
+  cat(sprintf("\nModel R²: %.3f", summary(model)$r.squared))
+  if(power < 0.80 && nrow(data) < 30) {
+    cat(sprintf(" | WARNING: Power=%.0f%% (underpowered)", power*100))
+  }
+  cat("\n\n")
   
   # Return results for plotting
   results$Group <- group_name

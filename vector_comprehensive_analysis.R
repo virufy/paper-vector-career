@@ -45,20 +45,64 @@ df <- read.csv("vector_survey_responses.csv", check.names = FALSE)
 # Fix duplicate column names (critical for avoiding errors)
 colnames(df) <- make.unique(colnames(df))
 
-# Identify the numeric Likert scale columns (questions 1-11 in the survey)
-# Based on your structure, these should be columns 8-18
+# ROBUST APPROACH: Identify Likert columns by checking structure
+# Expecting 11 numeric columns in positions 8-18
+if(ncol(df) < 18) {
+  stop("ERROR: Data structure unexpected. Expected at least 18 columns, found ", ncol(df))
+}
+
 target_cols <- 8:18
+if(length(target_cols) != 11) {
+  stop("ERROR: Expected 11 Likert scale columns (q1-q11)")
+}
+
 colnames(df)[target_cols] <- paste0("q", 1:11)
 
-# Convert to numeric
-df[target_cols] <- lapply(df[target_cols], function(x) {
-  as.numeric(as.character(x))
-})
+# Validate that columns contain numeric/Likert-scale data
+df[target_cols] <- lapply(df[target_cols], function(x) as.numeric(as.character(x)))
 
-# Create clean dataset (complete cases only)
+# Check that values are reasonable (1-5 Likert scale)
+for(col in paste0("q", 1:11)) {
+  valid_range <- all(df[[col]] >= 1 & df[[col]] <= 5, na.rm = TRUE)
+  if(!valid_range) {
+    warning(sprintf("WARNING: %s contains values outside 1-5 range", col))
+  }
+}
+
+# ==============================================================================
+# 2.5 MISSING DATA ANALYSIS
+# ==============================================================================
+
+cat("\n=== MISSING DATA ANALYSIS ===\n")
+missing_counts <- colSums(is.na(df[target_cols]))
+missing_pct <- (missing_counts / nrow(df)) * 100
+
+if(any(missing_counts > 0)) {
+  cat("Missing data detected:\n")
+  for(i in seq_along(missing_counts)) {
+    if(missing_counts[i] > 0) {
+      cat(sprintf("  %s: %d (%.1f%%)\n", names(missing_counts)[i], 
+                  missing_counts[i], missing_pct[i]))
+    }
+  }
+  cat("\nAction: Using listwise deletion (complete cases only)\n")
+}
+
+# Report sample loss
+n_before <- nrow(df)
 df_clean <- df[complete.cases(df[target_cols]), ]
+n_after <- nrow(df_clean)
+data_loss_pct <- ((n_before - n_after) / n_before) * 100
 
-cat(sprintf("Data loaded successfully: %d complete responses\n", nrow(df_clean)))
+cat(sprintf("\nSample size: %d → %d complete responses\n", n_before, n_after))
+if(data_loss_pct > 10) {
+  cat(sprintf("⚠ WARNING: %.1f%% data loss due to missing values\n", data_loss_pct))
+}
+
+if(n_after < 30) {
+  warning(sprintf("SAMPLE SIZE WARNING: n=%d is below recommended minimum of 30", n_after))
+}
+
 cat(sprintf("Variables: q1-q11 representing skills, networking, and outcomes\n\n"))
 
 # ==============================================================================
@@ -159,7 +203,73 @@ cat("\n")
 cat("--- Multicollinearity Check (VIF) ---\n")
 vif_values <- vif(full_model)
 print(round(vif_values, 2))
-cat("\nNote: VIF > 5 indicates potential multicollinearity issues\n\n")
+
+# Enhanced VIF interpretation
+max_vif <- max(vif_values)
+if(max_vif > 10) {
+  cat("\n🔴 CRITICAL: VIF > 10 detected - severe multicollinearity\n")
+  cat("   Consider: Removing highly correlated predictors or using ridge regression\n")
+} else if(max_vif > 5) {
+  cat("\n⚠ CAUTION: Some VIF > 5 - moderate multicollinearity detected\n")
+  cat("   Standard errors may be inflated but results interpretable\n")
+} else {
+  cat("\n✓ No multicollinearity concerns (all VIF < 5)\n")
+}
+cat("\n")
+
+# ==============================================================================
+# 6.5 REGRESSION DIAGNOSTICS (Assumption Testing)
+# ==============================================================================
+
+cat("\n=== REGRESSION ASSUMPTION CHECKS ===\n")
+
+# 1. Normality of residuals (Shapiro-Wilk test)
+shapiro_test <- shapiro.test(residuals(full_model))
+cat(sprintf("✓ Shapiro-Wilk normality test: W=%.4f, p=%.4f\n", 
+            shapiro_test$statistic, shapiro_test$p.value))
+
+if(shapiro_test$p.value < 0.05) {
+  cat("  ⚠ WARNING: Residuals not normally distributed (p < 0.05)\n")
+  cat("     Consider: Robust regression, bootstrap CI, or data transformation\n")
+} else {
+  cat("  ✓ Residuals appear normally distributed\n")
+}
+
+# 2. Homoscedasticity (Breusch-Pagan test)
+if(require("lmtest", quietly = TRUE)) {
+  bp_test <- lmtest::bptest(full_model)
+  cat(sprintf("\n✓ Breusch-Pagan heteroscedasticity test: BP=%.4f, p=%.4f\n",
+              bp_test$statistic, bp_test$p.value))
+  
+  if(bp_test$p.value < 0.05) {
+    cat("  ⚠ WARNING: Heteroscedasticity detected (p < 0.05)\n")
+    cat("     Consider: Weighted least squares or robust standard errors\n")
+  } else {
+    cat("  ✓ Homoscedasticity assumption appears satisfied\n")
+  }
+}
+
+# 3. Influential outliers (Cook's Distance)
+cooks_d <- cooks.distance(full_model)
+influential_threshold <- 4 / nrow(df_clean)
+influential <- which(cooks_d > influential_threshold)
+
+cat(sprintf("\n✓ Cook's Distance analysis (threshold=%.4f):\n", influential_threshold))
+if(length(influential) > 0) {
+  cat(sprintf("  ⚠ WARNING: %d influential observations detected\n", length(influential)))
+  cat(sprintf("     Values: %s\n", paste(head(influential, 10), collapse=", ")))
+  cat("     Consider: Sensitivity analysis removing these points\n")
+} else {
+  cat("  ✓ No influential outliers detected\n")
+}
+
+# Save diagnostic plots
+cat("\nGenerating diagnostic plots...\n")
+png("output/regression_diagnostics.png", width=1400, height=1000, res=120)
+par(mfrow=c(2,2))
+plot(full_model)
+dev.off()
+cat("✓ Diagnostic plots saved: output/regression_diagnostics.png\n\n")
 
 # ==============================================================================
 # 7. RELATIVE IMPORTANCE METRICS (LMG)
@@ -175,19 +285,74 @@ rel_imp <- calc.relimp(full_model, type = "lmg", rela = TRUE)
 importance_results <- data.frame(
   Variable = names(rel_imp$lmg),
   LMG_Contribution = rel_imp$lmg * 100,  # Convert to percentage
-  Description = var_labels$Description[1:7]
+  Description = var_labels$Description[1:7],
+  SE_Bootstrap = NA,
+  CI_Lower = NA,
+  CI_Upper = NA
 )
+
+# ==============================================================================
+# 7.5 BOOTSTRAP CONFIDENCE INTERVALS FOR RELATIVE IMPORTANCE
+# ==============================================================================
+
+cat("Calculating bootstrap confidence intervals (1000 iterations)...\n")
+set.seed(42)  # For reproducibility
+
+boot_lmg <- function(data, indices) {
+  d <- data[indices, ]
+  model <- lm(q10_scaled ~ ., data = d)
+  rel_imp_boot <- calc.relimp(model, type="lmg", rela=TRUE)
+  return(rel_imp_boot$lmg * 100)
+}
+
+# Prepare data for bootstrap
+boot_data <- cbind(
+  predictors_scaled,
+  q10_scaled = outcome_scaled
+)
+
+if(require("boot", quietly = TRUE)) {
+  boot_results <- boot::boot(data = boot_data, 
+                             statistic = boot_lmg, 
+                             R = 1000,
+                             parallel = "multicore",
+                             ncpus = 4)
+  
+  # Extract confidence intervals
+  for(i in 1:7) {
+    ci <- quantile(boot_results$t[,i], c(0.025, 0.975), na.rm=TRUE)
+    se <- sd(boot_results$t[,i], na.rm=TRUE)
+    importance_results$SE_Bootstrap[i] <- se
+    importance_results$CI_Lower[i] <- ci[1]
+    importance_results$CI_Upper[i] <- ci[2]
+  }
+  cat("✓ Bootstrap confidence intervals calculated\n\n")
+} else {
+  cat("⚠ Boot package not available - skipping bootstrap CI\n\n")
+}
 
 # Sort by importance
 importance_results <- importance_results[order(-importance_results$LMG_Contribution), ]
 
 cat("\nRANKED PREDICTORS (by contribution to R²):\n")
 for(i in 1:nrow(importance_results)) {
-  cat(sprintf("%d. %s (%s): %.1f%%\n", 
-              i,
-              importance_results$Variable[i],
-              importance_results$Description[i],
-              importance_results$LMG_Contribution[i]))
+  lmg <- importance_results$LMG_Contribution[i]
+  ci_lower <- importance_results$CI_Lower[i]
+  ci_upper <- importance_results$CI_Upper[i]
+  
+  if(!is.na(ci_lower)) {
+    cat(sprintf("%d. %s (%s): %.1f%% [95%% CI: %.1f%% - %.1f%%]\n", 
+                i,
+                importance_results$Variable[i],
+                importance_results$Description[i],
+                lmg, ci_lower, ci_upper))
+  } else {
+    cat(sprintf("%d. %s (%s): %.1f%%\n", 
+                i,
+                importance_results$Variable[i],
+                importance_results$Description[i],
+                lmg))
+  }
 }
 cat("\n")
 
