@@ -269,3 +269,172 @@ if(length(all_subgroup_results) > 0) {
 }
 
 cat("\nAdvanced subgroup analysis complete!\n")
+
+#=============================UPDATED DEMOGRAPHIC SEGMENTS======================
+
+%%R
+
+# ────────────────────────────────────────────────────────────────
+# 1. Install & load required packages (run once if needed)
+# ────────────────────────────────────────────────────────────────
+if (!require("janitor")) install.packages("janitor", quiet = TRUE)
+if (!require("dplyr"))    install.packages("dplyr",    quiet = TRUE)
+if (!require("stringr"))  install.packages("stringr",  quiet = TRUE)
+
+library(janitor)
+library(dplyr)
+library(stringr)
+
+# ────────────────────────────────────────────────────────────────
+# 2. Fix column names (removes duplicates like "Confirmation")
+# ────────────────────────────────────────────────────────────────
+df_clean <- df %>%
+  clean_names()     # makes names snake_case + unique + safe
+
+cat("Column names fixed. First 20 columns:\n")
+print(head(colnames(df_clean), 20))
+
+# ────────────────────────────────────────────────────────────────
+# 3. Find key columns (robust name matching)
+# ────────────────────────────────────────────────────────────────
+
+# Career stage
+career_col <- colnames(df_clean) %>%
+  str_subset(regex("career_stage|stage_when_you_volunteered|best_describes_your_career_stage",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(career_col)) stop("Career stage column not found")
+
+# Role at Virufy
+role_col <- colnames(df_clean) %>%
+  str_subset(regex("role_at_virufy|best_describes_your_role",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(role_col)) stop("Role column not found")
+
+# Countries of residence
+country_col <- colnames(df_clean) %>%
+  str_subset(regex("countries_of_residence|country.*while_volunteering",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(country_col)) stop("Country column not found")
+
+# ────────────────────────────────────────────────────────────────
+# 4. Create demographic variables
+# ────────────────────────────────────────────────────────────────
+
+df_clean <- df_clean %>%
+  mutate(
+    # ── Role Type (Tech vs Non-Tech) ───────────────────────────────
+    role_text = str_to_lower(coalesce(.data[[role_col]], "")),
+
+    Role_Type = case_when(
+      str_detect(role_text, regex(
+        "app (development|developer|dev)|web (development|developer|dev)|ml engineering|machine learning|data scientist|cloud engineering|cloud|it|cybersecurity|engineer|developer|aws|react|typescript|ai|ml |data |devops",
+        ignore_case = TRUE
+      )) ~ "Tech",
+
+      role_text == "" | is.na(role_text) ~ "Unknown / Not specified",
+      TRUE ~ "Non-Tech"
+    ),
+
+    # ── Career Stage (handles multi-select) ────────────────────────
+    career_text = str_to_lower(coalesce(.data[[career_col]], "")),
+
+    has_student = str_detect(career_text, regex(
+      "student|undergraduate|master|masters|doctoral|phd|high school",
+      ignore_case = TRUE
+    )),
+
+    has_professional = str_detect(career_text, regex(
+      "professional|\\d+-\\d+ years|prefer not to answer",
+      ignore_case = TRUE
+    )),
+
+    Career_Stage = case_when(
+      has_student & has_professional    ~ "Hybrid (student + professional)",
+      has_student                       ~ "Student (current / recent)",
+      has_professional                  ~ "Professional only",
+      TRUE                              ~ "Other / missing"
+    ),
+
+    # ── Geography (approximate Global North/West vs South/Other) ───
+    country_text = str_to_lower(coalesce(.data[[country_col]], "")),
+
+    Geography = case_when(
+      country_text == "" | is.na(country_text) ~ "Unknown / Not specified",
+
+      str_detect(country_text, regex(
+        "united states|usa|canada|united kingdom|uk|australia|new zealand|japan|singapore|south korea|germany|france|netherlands|sweden|switzerland|norway|denmark|finland|belgium|austria",
+        ignore_case = TRUE
+      )) ~ "Global North / West",
+
+      TRUE ~ "Global South / Other"
+    )
+  )
+
+# ────────────────────────────────────────────────────────────────
+# 5. Print the requested distributions
+# ────────────────────────────────────────────────────────────────
+
+cat("\n=== Role Type Distribution ===\n")
+df_clean %>%
+  count(Role_Type, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+cat("\n=== Career Stage Distribution ===\n")
+df_clean %>%
+  count(Career_Stage, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+
+
+# Optional bonus: cross-tab
+cat("\nCross-tab: Career Stage × Role Type\n")
+table(df_clean$Career_Stage, df_clean$Role_Type) %>% print()
+
+
+#==================GEOGRAPHY Distribution=======================================
+
+%%R
+
+# Fix Geography with the correct column name
+country_col <- "x3_what_were_your_countries_of_residence_while_volunteering_at_virufy_select_all_that_apply"
+
+df_clean <- df_clean %>%
+  mutate(
+    country_lower = str_to_lower(coalesce(.data[[country_col]], "")),
+
+    Geography = case_when(
+      country_lower == "" | is.na(country_lower) ~ "Unknown / Blank",
+
+      str_detect(country_lower, regex(
+        "united states|usa|canada|united kingdom|uk|australia|new zealand|japan|singapore|south korea|germany|france|netherlands|sweden|switzerland|norway|denmark|finland|belgium|austria",
+        ignore_case = TRUE
+      )) ~ "Global North / West",
+
+      TRUE ~ "Global South / Other"
+    )
+  )
+
+# Print the fixed Geography distribution
+cat("\n=== Geography Distribution ===\n")
+df_clean %>%
+  count(Geography, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+# Bonus: show top 10 country combinations for reference
+cat("\n=== Top 10 country combinations in data ===\n")
+df_clean %>%
+  count(.data[[country_col]], name = "Count", sort = TRUE) %>%
+  head(10) %>%
+  print()
