@@ -56,9 +56,10 @@ df_clean$Role_Type <- ifelse(
 )
 
 # B. STUDENT vs PROFESSIONAL
+# Column 4 = career stage question (column 3 is the consent text)
 df_clean$Career_Stage <- ifelse(
-  grepl("student", df_clean[[3]], ignore.case = TRUE), 
-  "Student", 
+  grepl("student|undergraduate|master|doctoral|phd|high school", df_clean[[4]], ignore.case = TRUE),
+  "Student",
   "Professional"
 )
 
