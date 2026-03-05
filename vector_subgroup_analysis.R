@@ -37,61 +37,49 @@ df[target_cols] <- lapply(df[target_cols], function(x) as.numeric(as.character(x
 df_clean <- df[complete.cases(df[target_cols]), ]
 
 # ==============================================================================
-# 2. CREATE DEMOGRAPHIC GROUPS (WITH IMPROVED RESILIENT MAPPING)
+# 2. CREATE DEMOGRAPHIC GROUPS
 # ==============================================================================
 
 cat("\n=== CREATING DEMOGRAPHIC SEGMENTS ===\n")
 
-# Improved mapping strategy: Use column names instead of indices for resilience
-# After reading the CSV, the actual columns are:
-# Column 4: Career stage when volunteered
-# Column 6: Role at Virufy
-# Column 25: Countries of residence (note: column 5 is empty, actual data is in 25)
+# Extract demographic columns (adjust indices based on your actual data structure)
+# Column 3: Career stage
+# Column 5: Country
+# Column 6: Role
 
-# A. TECH vs NON-TECH (expanded keywords for better coverage)
-tech_keywords <- "App Dev|Web Dev|Developer|ML Engineering|Data Scientist|Cloud|IT|Engineer|Programming|Technical|Data Analysis|Software|AI|Machine Learning"
-nontech_keywords <- "HR|Marketing|Operations|Legal|Admin|Management|Communications|Design|Product|Business|Outreach|Research|Writing|Grant"
-
+# A. TECH vs NON-TECH
+tech_keywords <- "App Dev|Web Dev|ML Engineering|Data Scientist|Cloud|IT|Engineer|Developer"
 df_clean$Role_Type <- ifelse(
   grepl(tech_keywords, df_clean[[6]], ignore.case = TRUE), 
-  "Tech",
-  ifelse(grepl(nontech_keywords, df_clean[[6]], ignore.case = TRUE),
-         "Non-Tech",
-         NA)  # Unclassified roles as NA
+  "Tech", 
+  "Non-Tech"
 )
 
-# B. STUDENT vs PROFESSIONAL (expanded student keywords)
+# B. STUDENT vs PROFESSIONAL
 df_clean$Career_Stage <- ifelse(
-  grepl("student|undergraduate|master|doctoral|phd|graduate", df_clean[[4]], ignore.case = TRUE), 
+  grepl("student", df_clean[[3]], ignore.case = TRUE), 
   "Student", 
   "Professional"
 )
 
-# C. GEOGRAPHY (Global West vs South) - Use column 25 which has the country data
-# Countries data includes: Canada, Pakistan, Japan, United Arab Emirates, USA, etc.
-west_keywords <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore|Germany|France|Switzerland|Netherlands|Belgium|Austria|South Korea|New Zealand|Sweden|Norway|Denmark"
+# C. GEOGRAPHY (Global South vs West)
+west_keywords <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore"
 df_clean$Geography <- ifelse(
-  grepl(west_keywords, df_clean[[25]], ignore.case = TRUE),
+  grepl(west_keywords, df_clean[[5]], ignore.case = TRUE),
   "Global_West",
   "Global_South"
 )
 
-# Print segment sizes with clarity
-cat("\n--- Role Type Distribution ---\n")
-tech_count <- sum(df_clean$Role_Type == "Tech", na.rm = TRUE)
-nontech_count <- sum(df_clean$Role_Type == "Non-Tech", na.rm = TRUE)
-unclassified_count <- sum(is.na(df_clean$Role_Type))
-cat(sprintf("Tech: %d | Non-Tech: %d | Unclassified: %d\n\n", tech_count, nontech_count, unclassified_count))
-
-cat("--- Career Stage Distribution ---\n")
-student_count <- sum(df_clean$Career_Stage == "Student", na.rm = TRUE)
-prof_count <- sum(df_clean$Career_Stage == "Professional", na.rm = TRUE)
-cat(sprintf("Student: %d | Professional: %d\n\n", student_count, prof_count))
-
-cat("--- Geography Distribution ---\n")
-west_count <- sum(df_clean$Geography == "Global_West", na.rm = TRUE)
-south_count <- sum(df_clean$Geography == "Global_South", na.rm = TRUE)
-cat(sprintf("Global West: %d | Global South: %d\n\n", west_count, south_count))
+# Print segment sizes
+cat(sprintf("\nTech: %d | Non-Tech: %d\n", 
+            sum(df_clean$Role_Type == "Tech"), 
+            sum(df_clean$Role_Type == "Non-Tech")))
+cat(sprintf("Student: %d | Professional: %d\n", 
+            sum(df_clean$Career_Stage == "Student"), 
+            sum(df_clean$Career_Stage == "Professional")))
+cat(sprintf("Global West: %d | Global South: %d\n\n", 
+            sum(df_clean$Geography == "Global_West"), 
+            sum(df_clean$Geography == "Global_South")))
 
 # ==============================================================================
 # 3. SUBGROUP RELATIVE IMPORTANCE ANALYSIS
@@ -140,39 +128,14 @@ analyze_subgroup <- function(data, group_name) {
   )
   results <- results[order(-results$Contribution), ]
   
-  # Add Status column for scientific integrity labeling
-  # Robust (n>=30): Confident findings
-  # Exploratory/Preliminary (15<=n<30): Requires replication
-  results$Status <- ifelse(nrow(data) >= 30, 
-                           "Robust", 
-                           "Exploratory/Preliminary")
-  
-  # Calculate statistical power
-  n_subgroup <- length(outcome)
-  n_predictors <- 7
-  r_squared_subgroup <- summary(model)$r.squared
-  effect_size_f2 <- ifelse(r_squared_subgroup < 1, 
-                           r_squared_subgroup / (1 - r_squared_subgroup), 1.0)
-  df_residual <- n_subgroup - n_predictors - 1
-  f_crit <- qf(0.95, n_predictors, df_residual)
-  lambda <- sqrt(n_subgroup * effect_size_f2)
-  power <- max(0, min(1, 1 - pf(f_crit, n_predictors, df_residual, lambda)))
-  
   # Print top 3
   cat("\nTop 3 Predictors:\n")
   for(i in 1:min(3, nrow(results))) {
-    status_label <- results$Status[i]
-    power_pct <- power * 100
-    cat(sprintf("  %d. %s: %.1f%% (Status: %s, Power: %.0f%%)\n", 
-                i, results$Variable[i], results$Contribution[i],
-                status_label, power_pct))
+    cat(sprintf("  %d. %s: %.1f%%\n", i, results$Variable[i], results$Contribution[i]))
   }
   
-  cat(sprintf("\nModel R²: %.3f", summary(model)$r.squared))
-  if(power < 0.80 && nrow(data) < 30) {
-    cat(sprintf(" | WARNING: Power=%.0f%% (underpowered)", power*100))
-  }
-  cat("\n\n")
+  cat(sprintf("\nModel R²: %.3f\n", summary(model)$r.squared))
+  cat("\n")
   
   # Return results for plotting
   results$Group <- group_name
@@ -301,10 +264,162 @@ if(length(unique(df_clean$Career_Stage)) > 1) {
 
 if(length(all_subgroup_results) > 0) {
   combined_results_export <- do.call(rbind, all_subgroup_results)
-  rownames(combined_results_export) <- NULL  # Reset row names for clean export
   write.csv(combined_results_export, "output/subgroup_analysis_results.csv", row.names = FALSE)
-  cat("\nSubgroup results exported to: output/subgroup_analysis_results.csv")
-  cat("\nNote: Results marked 'Exploratory/Preliminary' require replication with larger sample.\n")
+  cat("\nSubgroup results exported to: output/subgroup_analysis_results.csv\n")
 }
 
 cat("\nAdvanced subgroup analysis complete!\n")
+
+#=============================UPDATED DEMOGRAPHIC SEGMENTS======================
+
+# ────────────────────────────────────────────────────────────────
+# 1. Install & load required packages (run once if needed)
+# ────────────────────────────────────────────────────────────────
+if (!require("janitor")) install.packages("janitor", quiet = TRUE)
+if (!require("dplyr"))    install.packages("dplyr",    quiet = TRUE)
+if (!require("stringr"))  install.packages("stringr",  quiet = TRUE)
+
+library(janitor)
+library(dplyr)
+library(stringr)
+
+# ────────────────────────────────────────────────────────────────
+# 2. Fix column names (removes duplicates like "Confirmation")
+# ────────────────────────────────────────────────────────────────
+df_clean <- df_clean %>%
+  clean_names()     # makes names snake_case + unique + safe
+
+cat("Column names fixed. First 20 columns:\n")
+print(head(colnames(df_clean), 20))
+
+# ────────────────────────────────────────────────────────────────
+# 3. Find key columns (robust name matching)
+# ────────────────────────────────────────────────────────────────
+
+# Career stage
+career_col <- colnames(df_clean) %>%
+  str_subset(regex("career_stage|stage_when_you_volunteered|best_describes_your_career_stage",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(career_col)) stop("Career stage column not found")
+
+# Role at Virufy
+role_col <- colnames(df_clean) %>%
+  str_subset(regex("role_at_virufy|best_describes_your_role",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(role_col)) stop("Role column not found")
+
+# Countries of residence
+country_col <- colnames(df_clean) %>%
+  str_subset(regex("countries_of_residence|country.*while_volunteering",
+                   ignore_case = TRUE)) %>%
+  first()
+
+if (is.na(country_col)) stop("Country column not found")
+
+# ────────────────────────────────────────────────────────────────
+# 4. Create demographic variables
+# ────────────────────────────────────────────────────────────────
+
+df_clean <- df_clean %>%
+  mutate(
+    # ── Role Type (Tech vs Non-Tech) ───────────────────────────────
+    role_text = str_to_lower(coalesce(.data[[role_col]], "")),
+
+    Role_Type = case_when(
+      str_detect(role_text, regex(
+        "app (development|developer|dev)|web (development|developer|dev)|ml engineering|machine learning|data scientist|cloud engineering|cloud|it|cybersecurity|engineer|developer|aws|react|typescript|ai|\\bml\\b|\\bdata\\b|devops",
+        ignore_case = TRUE
+      )) ~ "Tech",
+
+      role_text == "" ~ "Unknown / Not specified",
+      TRUE ~ "Non-Tech"
+    ),
+
+    # ── Career Stage (handles multi-select) ────────────────────────
+    career_text = str_to_lower(coalesce(.data[[career_col]], "")),
+
+    has_student = str_detect(career_text, regex(
+      "student|undergraduate|master|masters|doctoral|phd|high school",
+      ignore_case = TRUE
+    )),
+
+    has_professional = str_detect(career_text, regex(
+      "professional|\\d+-\\d+ years",
+      ignore_case = TRUE
+    )),
+
+    has_prefer_not = str_detect(career_text, regex(
+      "prefer not to answer",
+      ignore_case = TRUE
+    )),
+
+    Career_Stage = case_when(
+      has_student & has_professional              ~ "Hybrid (student + professional)",
+      has_student                                 ~ "Student (current / recent)",
+      has_professional                            ~ "Professional only",
+      has_prefer_not                              ~ "Other / missing",
+      TRUE                                        ~ "Other / missing"
+    ),
+
+    # ── Geography (approximate Global North/West vs South/Other) ───
+    country_text = str_to_lower(coalesce(.data[[country_col]], "")),
+
+    Geography = case_when(
+      country_text == "" ~ "Unknown / Not specified",
+
+      str_detect(country_text, regex(
+        "united states|usa|canada|united kingdom|\\buk\\b|australia|new zealand|japan|singapore|south korea|germany|france|netherlands|sweden|switzerland|norway|denmark|finland|belgium|austria",
+        ignore_case = TRUE
+      )) ~ "Global North / West",
+
+      TRUE ~ "Global South / Other"
+    )
+  )
+
+# ────────────────────────────────────────────────────────────────
+# 5. Print the requested distributions
+# ────────────────────────────────────────────────────────────────
+
+cat("\n=== Role Type Distribution ===\n")
+df_clean %>%
+  count(Role_Type, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+cat("\n=== Career Stage Distribution ===\n")
+df_clean %>%
+  count(Career_Stage, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+
+
+# Optional bonus: cross-tab
+cat("\nCross-tab: Career Stage × Role Type\n")
+table(df_clean$Career_Stage, df_clean$Role_Type) %>% print()
+
+
+#==================GEOGRAPHY Distribution=======================================
+
+# Use existing `country_col` and `Geography` classification computed earlier
+
+# Print the Geography distribution
+cat("\n=== Geography Distribution ===\n")
+df_clean %>%
+  count(Geography, name = "Count") %>%
+  arrange(desc(Count)) %>%
+  mutate(Percentage = round(100 * Count / sum(Count), 1)) %>%
+  print()
+
+# Bonus: show top 10 country combinations for reference
+cat("\n=== Top 10 country combinations in data ===\n")
+df_clean %>%
+  count(.data[[country_col]], name = "Count", sort = TRUE) %>%
+  head(10) %>%
+  print()
