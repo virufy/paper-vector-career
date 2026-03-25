@@ -29,44 +29,44 @@ This repository implements a reproducible quantitative supplement for the paper 
 This supplement decomposes six months of Virufy volunteer survey data (April 2025 – September 2025) into three interpretable components:
 
 ```
-┌──────────────────────────────────────────────────────────┐
-│          CAREER OUTCOMES PREDICTION PIPELINE             │
-│                                                          │
-│  ┌────────────────────┐  ┌──────────────────────┐       │
-│  │  Skill Predictors  │  │  Network Predictors  │       │
-│  │                    │  │                      │       │
-│  │  • q1: Technical   │  │  • q5: Size          │       │
-│  │  • q2: Comm.       │  │  • q6: Quality       │       │
-│  │  • q3: Leadership  │  │  • q7: Access        │       │
-│  │  • q4: Time Mgmt   │  │                      │       │
-│  └─────────┬──────────┘  └──────────┬───────────┘       │
-│            │                        │                    │
-│            └────────────┬───────────┘                    │
-│                         │                                │
-│                   Feature Engineering                    │
-│                Scaling · Missingness Audit               │
-│                Complete-Case Deletion (n=78)             │
-│                         │                                │
-│         ┌───────────────┴───────────────┐               │
-│         │   OLS Regression (LMG)        │               │
-│         │   + Bootstrap Confidence      │               │
-│         │   + VIF Diagnostics          │               │
-│         │   + SEM Construct Validation │               │
-│         └───────────────┬───────────────┘               │
-│                         │                                │
-│    ┌────────────────────┼────────────────────┐          │
-│    │                    │                    │          │
-│  ┌─▼──────┐  ┌──────────▼────────┐  ┌───────▼─┐       │
-│  │ Full   │  │ Subgroup Ranking  │  │ SEM     │       │
-│  │ Rank   │  │ (Role, Stage, Geo)│  │ Structure │       │
-│  │ Order  │  │                   │  │ Validity │       │
-│  └────────┘  └───────────────────┘  └─────────┘       │
-│                                                          │
-│         ──► relative_importance_results.csv              │
-│         ──► subgroup_analysis_results.csv               │
-│         ──► sem_fit_indices.csv                         │
-│         ──► paper_claim_check.csv                       │
-└──────────────────────────────────────────────────────────┘
+┌────────────────────────────────────────────────────────────┐
+│           CAREER OUTCOMES PREDICTION PIPELINE              │
+│                                                            │
+│  ┌────────────────────┐  ┌──────────────────────┐        │
+│  │  Skill Predictors  │  │  Network Predictors  │        │
+│  │                    │  │                      │        │
+│  │  • q1: Technical   │  │  • q5: Size          │        │
+│  │  • q2: Comm.       │  │  • q6: Quality       │        │
+│  │  • q3: Leadership  │  │  • q7: Access        │        │
+│  │  • q4: Time Mgmt   │  │                      │        │
+│  └─────────┬──────────┘  └──────────┬───────────┘        │
+│            │                        │                     │
+│            └────────────┬───────────┘                     │
+│                         │                                 │
+│                   Feature Engineering                     │
+│                Scaling · Missingness Audit                │
+│                Complete-Case Deletion (n=78)              │
+│                         │                                 │
+│         ┌───────────────┴───────────────┐                │
+│         │   OLS Regression (LMG)        │                │
+│         │   + Bootstrap Confidence      │                │
+│         │   + VIF Diagnostics          │                │
+│         │   + SEM Construct Validation │                │
+│         └───────────────┬───────────────┘                │
+│                         │                                 │
+│    ┌────────────────────┼────────────────────┐           │
+│    │                    │                    │           │
+│  ┌─▼──────┐  ┌──────────▼────────┐  ┌───────▼─┐        │
+│  │ Full   │  │ Subgroup Ranking  │  │ SEM     │        │
+│  │ Rank   │  │ (Role, Stage, Geo)│  │ Structure│        │
+│  │ Order  │  │                   │  │ Validity │        │
+│  └────────┘  └───────────────────┘  └─────────┘        │
+│                                                            │
+│         ──► relative_importance_results.csv               │
+│         ──► subgroup_analysis_results.csv                │
+│         ──► sem_fit_indices.csv                          │
+│         ──► paper_claim_check.csv                        │
+└────────────────────────────────────────────────────────────┘
 ```
 
 ---
