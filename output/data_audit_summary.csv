@@ -1,0 +1,4 @@
+"metric","value"
+"rows_in_input_csv",80
+"rows_with_complete_core_likert_items",78
+"rows_excluded_due_to_core_missingness",2
