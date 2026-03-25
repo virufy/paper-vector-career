@@ -5,6 +5,12 @@
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
+# Add user library to search path
+user_lib <- path.expand("~/R/library")
+if (dir.exists(user_lib)) {
+  .libPaths(c(user_lib, .libPaths()))
+}
+
 required_pkgs <- c(
   "boot", "car", "corrplot", "dplyr", "ggplot2", "lavaan", "lmtest",
   "ppcor", "psych", "relaimpo"

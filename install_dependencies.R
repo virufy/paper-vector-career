@@ -5,6 +5,12 @@
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
+# Determine library path (use user library if system library is not writable)
+user_lib <- path.expand("~/R/library")
+if (!dir.exists(user_lib)) {
+  dir.create(user_lib, recursive = TRUE, showWarnings = FALSE)
+}
+
 required_packages <- c(
   "boot",
   "car",
@@ -18,7 +24,8 @@ required_packages <- c(
   "relaimpo"
 )
 
-cat("\nInstalling Project VECTOR dependencies...\n\n")
+cat("\nInstalling Project VECTOR dependencies...\n")
+cat(sprintf("Library: %s\n\n", user_lib))
 
 ok <- character(0)
 failed <- character(0)
@@ -27,9 +34,9 @@ for (pkg in required_packages) {
   cat(sprintf("- %s: ", pkg))
   tryCatch({
     if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
-      install.packages(pkg, dependencies = TRUE, quiet = TRUE)
+      install.packages(pkg, lib = user_lib, dependencies = TRUE, quiet = TRUE)
     }
-    library(pkg, character.only = TRUE, quietly = TRUE)
+    library(pkg, character.only = TRUE, lib.loc = user_lib, quietly = TRUE)
     ok <- c(ok, pkg)
     cat("OK\n")
   }, error = function(e) {

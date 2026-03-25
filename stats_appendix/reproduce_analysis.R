@@ -8,6 +8,12 @@
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 set.seed(42)
 
+# Add user library to search path
+user_lib <- path.expand("~/R/library")
+if (dir.exists(user_lib)) {
+  .libPaths(c(user_lib, .libPaths()))
+}
+
 # Required packages
 required_pkgs <- c("boot", "car", "relaimpo", "psych")
 missing <- !sapply(required_pkgs, function(pkg) {
@@ -15,7 +21,10 @@ missing <- !sapply(required_pkgs, function(pkg) {
 })
 if (any(missing)) {
   cat("Installing missing:", paste(names(missing)[missing], collapse=", "), "\n")
-  install.packages(required_pkgs[missing], repos = "https://cloud.r-project.org", quiet = TRUE)
+  if (!dir.exists(user_lib)) {
+    dir.create(user_lib, recursive = TRUE, showWarnings = FALSE)
+  }
+  install.packages(required_pkgs[missing], lib = user_lib, repos = "https://cloud.r-project.org", quiet = TRUE)
   invisible(sapply(required_pkgs, require, character.only = TRUE, quietly = TRUE))
 }
 
