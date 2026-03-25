@@ -1,11 +1,31 @@
 ################################################################################
 # Project VECTOR: Reproducible Analysis Pipeline
-# Usage: Rscript --vanilla run_all_analyses.R
+#
+# This script consolidates all analysis for the "From Volunteer to Vocation" paper.
+# It automatically detects whether to use real survey data or example data.
+#
+# Quick Start:
+#   Rscript --vanilla run_analysis.R
+#
+# What this script does:
+#   1. Data audit and quality checks
+#   2. Descriptive statistics and correlations
+#   3. Full-sample LMG relative importance analysis
+#   4. Subgroup stratification analysis (by role, career stage, geography)
+#   5. Structural equation modeling (SEM) for construct validation
+#   6. Automated paper claim verification
+#
+# Data Configuration:
+#   - If vector_survey_responses.csv exists in root: uses real data
+#   - Otherwise: uses vector_survey_responses_example.csv for demonstration
+#
+# Output: 17 files in output/ directory (CSV, PNG, TXT)
 ################################################################################
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-# Add user library to search path
+# ===== SETUP: Library Paths and Package Loading =====
+
 user_lib <- path.expand("~/R/library")
 if (dir.exists(user_lib)) {
   .libPaths(c(user_lib, .libPaths()))
@@ -25,6 +45,8 @@ for (pkg in required_pkgs) {
 set.seed(42)
 dir.create("output", showWarnings = FALSE)
 
+# ===== UTILITY FUNCTIONS =====
+
 log_section <- function(title) {
   cat("\n")
   cat(strrep("=", 80), "\n", sep = "")
@@ -32,12 +54,38 @@ log_section <- function(title) {
   cat(strrep("=", 80), "\n", sep = "")
 }
 
-log_section("STEP 1: DATA LOADING AND AUDIT")
+cat("\n")
+cat("╔════════════════════════════════════════════════════════════════════════════╗\n")
+cat("║                   PROJECT VECTOR: Analysis Pipeline                       ║\n")
+cat("║                 Volunteer Career Outcomes Analysis                        ║\n")
+cat("╚════════════════════════════════════════════════════════════════════════════╝\n")
 
-csv_file <- "vector_survey_responses.csv"
-if (!file.exists(csv_file)) {
-  stop(sprintf("Data file not found: %s", csv_file))
+# ===== DATA SOURCE DETECTION =====
+
+cat("\nPreparing data source...\n")
+
+csv_file <- if (file.exists("vector_survey_responses.csv")) {
+  "vector_survey_responses.csv"
+} else if (file.exists("vector_survey_responses_example.csv")) {
+  "vector_survey_responses_example.csv"
+} else {
+  stop("Data file not found. Expected: vector_survey_responses.csv or vector_survey_responses_example.csv")
 }
+
+if (csv_file == "vector_survey_responses.csv") {
+  cat("✓ Using REAL DATA: vector_survey_responses.csv\n")
+  data_source <- "REAL"
+} else {
+  cat("✓ Using EXAMPLE DATA: vector_survey_responses_example.csv\n")
+  cat("  (For reproducible demonstration. Replace with real data for full analysis.)\n")
+  data_source <- "EXAMPLE"
+}
+
+################################################################################
+# STEP 1: DATA LOADING AND AUDIT
+################################################################################
+
+log_section("STEP 1: DATA LOADING AND AUDIT")
 
 df_raw <- read.csv(csv_file, check.names = FALSE)
 colnames(df_raw) <- make.unique(colnames(df_raw))
@@ -46,13 +94,15 @@ if (ncol(df_raw) < 18) {
   stop("Unexpected data structure: expected at least 18 columns")
 }
 
+# Map Likert columns (8-18) to standardized question names (q1-q11)
 likert_cols <- 8:18
 question_names <- paste0("q", 1:11)
 colnames(df_raw)[likert_cols] <- question_names
 
-# Preserve non-Likert fields while forcing Likert fields to numeric for analysis.
+# Force Likert fields to numeric for analysis
 df_raw[likert_cols] <- lapply(df_raw[likert_cols], function(x) as.numeric(as.character(x)))
 
+# Data quality audit
 audit <- data.frame(
   metric = c(
     "rows_in_input_csv",
@@ -68,6 +118,7 @@ audit <- data.frame(
 
 write.csv(audit, "output/data_audit_summary.csv", row.names = FALSE)
 
+# Missing data analysis
 missing_per_item <- data.frame(
   variable = question_names,
   missing_n = colSums(is.na(df_raw[question_names])),
@@ -75,8 +126,10 @@ missing_per_item <- data.frame(
 )
 write.csv(missing_per_item, "output/core_item_missingness.csv", row.names = FALSE)
 
+# Complete-case deletion
 df <- df_raw[complete.cases(df_raw[question_names]), ]
 
+# Participant flow tracking
 participant_flow <- data.frame(
   stage = c("input_rows", "complete_core_likert", "excluded_core_missing"),
   n = c(nrow(df_raw), nrow(df), nrow(df_raw) - nrow(df))
@@ -87,6 +140,7 @@ cat(sprintf("Input rows: %d\n", nrow(df_raw)))
 cat(sprintf("Complete rows used in primary analysis: %d\n", nrow(df)))
 cat(sprintf("Excluded due to core missingness: %d\n", nrow(df_raw) - nrow(df)))
 
+# Variable documentation
 var_labels <- data.frame(
   variable = question_names,
   category = c(rep("Skills", 4), rep("Network", 3), rep("Outcomes", 4)),
@@ -106,6 +160,10 @@ var_labels <- data.frame(
 )
 write.csv(var_labels, "output/variable_labels.csv", row.names = FALSE)
 
+################################################################################
+# STEP 2: DESCRIPTIVE STATISTICS AND CORRELATIONS
+################################################################################
+
 log_section("STEP 2: DESCRIPTIVE STATISTICS AND CORRELATIONS")
 
 desc <- psych::describe(df[question_names])
@@ -113,9 +171,11 @@ desc_export <- cbind(variable = rownames(desc), desc[, c("n", "mean", "sd", "med
 rownames(desc_export) <- NULL
 write.csv(desc_export, "output/descriptive_statistics.csv", row.names = FALSE)
 
+# Spearman correlation matrix (appropriate for ordinal Likert data)
 cor_matrix <- cor(df[question_names], method = "spearman")
 write.csv(cor_matrix, "output/correlation_matrix.csv")
 
+# Correlation heatmap visualization
 png("output/correlation_heatmap.png", width = 1200, height = 1000, res = 120)
 corrplot::corrplot(
   cor_matrix,
@@ -132,31 +192,43 @@ corrplot::corrplot(
 )
 dev.off()
 
-log_section("STEP 3: FULL SAMPLE LMG ANALYSIS")
+cat("✓ Generated: correlation_heatmap.png\n")
+
+################################################################################
+# STEP 3: FULL SAMPLE LMG ANALYSIS
+################################################################################
+
+log_section("STEP 3: FULL SAMPLE LMG RELATIVE IMPORTANCE ANALYSIS")
 
 predictor_names <- paste0("q", 1:7)
 outcome_name <- "q10"
 
+# Standardize for analysis
 x_scaled <- as.data.frame(scale(df[predictor_names]))
 y_scaled <- as.numeric(scale(df[[outcome_name]]))
 model_data <- x_scaled
 model_data$y <- y_scaled
 
+# Fit OLS regression model
 full_model <- lm(y ~ ., data = model_data)
 model_summary <- summary(full_model)
 
+# Diagnostic tests
 vif_values <- car::vif(full_model)
 resid_sw <- shapiro.test(residuals(full_model))
 resid_bp <- lmtest::bptest(full_model)
 
+# LMG relative importance decomposition
 rel <- relaimpo::calc.relimp(full_model, type = "lmg", rela = TRUE)
 
+# Bootstrap confidence intervals (1000 iterations)
 boot_fn <- function(data, idx) {
   m <- lm(y ~ ., data = data[idx, ])
   relaimpo::calc.relimp(m, type = "lmg", rela = TRUE)$lmg * 100
 }
 boot_res <- boot::boot(model_data, boot_fn, R = 1000)
 
+# Results table with CIs
 importance <- data.frame(
   variable = names(rel$lmg),
   lmg_pct = as.numeric(rel$lmg) * 100,
@@ -167,6 +239,16 @@ importance$description <- var_labels$description[match(importance$variable, var_
 importance <- importance[order(-importance$lmg_pct), ]
 write.csv(importance, "output/relative_importance_results.csv", row.names = FALSE)
 
+cat(sprintf("Model R² = %.3f (explains %.1f%% of variance in job/promotion success)\n",
+            model_summary$r.squared, model_summary$r.squared * 100))
+cat("Top 3 predictors:\n")
+for (i in 1:min(3, nrow(importance))) {
+  cat(sprintf("  %d. %s: %.1f%% [95%% CI: %.1f%%-%.1f%%]\n",
+              i, importance$variable[i], importance$lmg_pct[i],
+              importance$ci_lower[i], importance$ci_upper[i]))
+}
+
+# Model diagnostics
 diagnostics <- data.frame(
   metric = c("n", "r_squared", "adj_r_squared", "f_statistic", "f_p_value", "max_vif", "shapiro_p", "breusch_pagan_p"),
   value = c(
@@ -182,6 +264,7 @@ diagnostics <- data.frame(
 )
 write.csv(diagnostics, "output/full_model_diagnostics.csv", row.names = FALSE)
 
+# Relative importance barplot
 png("output/relative_importance_barplot.png", width = 1400, height = 800, res = 120)
 par(mar = c(8, 5, 4, 2))
 barplot(
@@ -202,11 +285,19 @@ text(
 )
 dev.off()
 
+cat("✓ Generated: relative_importance_barplot.png\n")
+
+################################################################################
+# STEP 4: DEMOGRAPHIC SUBGROUP ANALYSIS
+################################################################################
+
 log_section("STEP 4: DEMOGRAPHIC SUBGROUP ANALYSIS")
 
+# Define demographic stratification criteria
 tech_kw <- "App Dev|Web Dev|ML Engineering|Data Scientist|Cloud|IT|Engineer|Developer"
 west_kw <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore"
 
+# Assign demographic categories
 df$role_type <- ifelse(grepl(tech_kw, df[[6]], ignore.case = TRUE), "Tech", "Non-Tech")
 df$career_stage <- ifelse(
   grepl("student|undergraduate|master|doctoral|phd|high school", df[[4]], ignore.case = TRUE),
@@ -215,6 +306,7 @@ df$career_stage <- ifelse(
 )
 df$geography <- ifelse(grepl(west_kw, df[[5]], ignore.case = TRUE), "Global_West", "Global_South")
 
+# Report subgroup counts
 subgroup_counts <- data.frame(
   group = c("Role: Tech", "Role: Non-Tech", "Stage: Student", "Stage: Professional", "Geo: Global_West", "Geo: Global_South"),
   n = c(
@@ -228,6 +320,12 @@ subgroup_counts <- data.frame(
 )
 write.csv(subgroup_counts, "output/subgroup_counts.csv", row.names = FALSE)
 
+cat("Sample stratification:\n")
+for (i in 1:nrow(subgroup_counts)) {
+  cat(sprintf("  %s: n=%d\n", subgroup_counts$group[i], subgroup_counts$n[i]))
+}
+
+# LMG function for subgroups
 run_subgroup_lmg <- function(dat, group_name, min_n = 15) {
   if (nrow(dat) < min_n) {
     return(NULL)
@@ -252,6 +350,7 @@ run_subgroup_lmg <- function(dat, group_name, min_n = 15) {
   out[order(-out$contribution_pct), ]
 }
 
+# Run subgroup analyses
 subgroup_results <- list()
 for (role in sort(unique(df$role_type))) {
   subgroup_results[[paste("Role", role)]] <- run_subgroup_lmg(df[df$role_type == role, ], paste("Role:", role))
@@ -270,6 +369,7 @@ if (length(subgroup_results) > 0) {
   rownames(subgroup_df) <- NULL
   write.csv(subgroup_df, "output/subgroup_analysis_results.csv", row.names = FALSE)
 
+  # Visualization: top predictors by subgroup
   plot_df <- subgroup_df[subgroup_df$variable %in% c("q1", "q2", "q3", "q4"), ]
   png("output/subgroup_top_predictors_comparison.png", width = 1400, height = 800, res = 120)
   print(
@@ -284,9 +384,15 @@ if (length(subgroup_results) > 0) {
       )
   )
   dev.off()
+
+  cat("✓ Generated: subgroup_top_predictors_comparison.png\n")
 }
 
-log_section("STEP 5: SEM")
+################################################################################
+# STEP 5: STRUCTURAL EQUATION MODELING
+################################################################################
+
+log_section("STEP 5: STRUCTURAL EQUATION MODELING")
 
 sem_model <- '
   Skill_Development =~ q1 + q2 + q3 + q4
@@ -306,6 +412,7 @@ fit_idx <- lavaan::fitMeasures(
   c("cfi.scaled", "tli.scaled", "rmsea.scaled", "rmsea.ci.lower.scaled", "rmsea.ci.upper.scaled", "srmr")
 )
 
+# Composite construct reliability
 df$hc_composite <- rowMeans(df[, c("q1", "q2", "q3", "q4")], na.rm = TRUE)
 df$sc_composite <- rowMeans(df[, c("q5", "q6", "q7")], na.rm = TRUE)
 comp_r <- cor(df$hc_composite, df$sc_composite)
@@ -325,7 +432,20 @@ sem_export <- data.frame(
 )
 write.csv(sem_export, "output/sem_fit_indices.csv", row.names = FALSE)
 
-log_section("STEP 6: PAPER CLAIM CHECK")
+cat("Model fit indices:\n")
+cat(sprintf("  CFI = %.3f (target: >0.95)\n", as.numeric(sem_export$value[1])))
+cat(sprintf("  TLI = %.3f (target: >0.95)\n", as.numeric(sem_export$value[2])))
+cat(sprintf("  RMSEA = %.3f [90%% CI: %.3f-%.3f] (target: <0.08)\n",
+            as.numeric(sem_export$value[3]),
+            as.numeric(sem_export$value[4]),
+            as.numeric(sem_export$value[5])))
+cat(sprintf("  SRMR = %.3f (target: <0.05)\n", as.numeric(sem_export$value[6])))
+
+################################################################################
+# STEP 6: PAPER CLAIM VERIFICATION
+################################################################################
+
+log_section("STEP 6: AUTOMATED PAPER CLAIM VERIFICATION")
 
 claim_rows <- list()
 
@@ -340,14 +460,17 @@ add_claim <- function(claim, paper_value, code_value, tolerance) {
   )
 }
 
+# Main effect sizes from Table 2
 paper_table2 <- c(q1 = 14.4, q2 = 16.1, q3 = 17.2, q4 = 13.4, q5 = 11.0, q6 = 15.7, q7 = 12.2)
 code_table2 <- setNames(importance$lmg_pct, importance$variable)
 
+# SEM claims
 claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.976, fit_idx["cfi.scaled"], 0.005)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.038, fit_idx["rmsea.scaled"], 0.005)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.940, comp_r, 0.020)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("FULL_SAMPLE_R2", 0.575, model_summary$r.squared, 0.001)
 
+# Main effect claims
 for (v in names(paper_table2)) {
   claim_rows[[length(claim_rows) + 1]] <- add_claim(
     paste0("TABLE2_", v),
@@ -357,6 +480,7 @@ for (v in names(paper_table2)) {
   )
 }
 
+# Subgroup claims
 if (exists("subgroup_df")) {
   subgroup_lookup <- function(group_name, var_name) {
     subset_row <- subgroup_df[subgroup_df$group == group_name & subgroup_df$variable == var_name, ]
@@ -376,6 +500,40 @@ if (exists("subgroup_df")) {
 claim_check <- do.call(rbind, claim_rows)
 write.csv(claim_check, "output/paper_claim_check.csv", row.names = FALSE)
 
+# Report claim status
+matches <- sum(claim_check$status == "MATCH")
+mismatches <- sum(claim_check$status == "MISMATCH")
+total <- nrow(claim_check)
+accuracy <- round(100 * matches / total, 1)
+
+cat(sprintf("Claim verification: %d/%d MATCH (%.1f%% accuracy)\n", matches, total, accuracy))
+if (mismatches > 0) {
+  cat(sprintf("⚠️  %d claims need review (see output/paper_claim_check.csv)\n", mismatches))
+}
+
+################################################################################
+# FINAL SUMMARY
+################################################################################
+
+# Session reproducibility info
 capture.output(sessionInfo(), file = "output/session_info.txt")
 
-cat("\nAnalysis complete. Key outputs written to output/ directory.\n")
+# Count output files
+output_files <- length(list.files("output/"))
+
+cat("\n")
+cat(strrep("=", 80), "\n")
+cat("ANALYSIS COMPLETE\n")
+cat(strrep("=", 80), "\n")
+cat(sprintf("✓ Generated %d output files in output/ directory\n", output_files))
+cat(sprintf("✓ Data source: %s (%d complete cases analyzed)\n", data_source, nrow(df)))
+cat(sprintf("✓ Output directory: output/\n"))
+cat("\nKey outputs:\n")
+cat("  - relative_importance_results.csv    (LMG rankings)\n")
+cat("  - subgroup_analysis_results.csv      (Stratified results)\n")
+cat("  - sem_fit_indices.csv                (Model validation)\n")
+cat("  - paper_claim_check.csv              (Reproducibility check)\n")
+cat("  - *.png files                        (Visualizations)\n")
+cat("\n")
+
+################################################################################

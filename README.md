@@ -107,116 +107,75 @@ From `output/participant_flow.csv`:
 
 To reproduce all results from scratch on a clean machine:
 
-#### Step 1: Clone the Repository
+### 3.2 Quick Start: Run the Analysis in 3 Steps
+
+To reproduce all results on your machine:
+
+#### **Step 1:** Clone the Repository
 
 ```bash
 git clone https://github.com/virufy/paper-career-supplement.git
 cd paper-career-supplement
 ```
 
-#### Step 2: Install Dependencies
+#### **Step 2:** Install R Dependencies (Once)
 
 ```bash
 Rscript --vanilla install_dependencies.R
 ```
 
-This installs all required R packages (relaimpo, car, lmtest, lavaan, boot, ggplot2, corrplot, psych, dplyr, ppcor).
-
-**On Linux (Ubuntu/Debian)**, you may first need system development tools:
+**On Linux (Ubuntu/Debian)**, you may first need system tools:
 
 ```bash
 sudo apt update && sudo apt install -y build-essential r-base-dev libcurl4-openssl-dev libxml2-dev libssl-dev
 ```
 
-#### Step 3: Place Your Data File
-
-For **local reproduction with full data**: Ensure `vector_survey_responses.csv` is in the repository root directory. The file must contain at least 18 columns with core Likert items in columns 8–18 (mapped to q1–q11).
-
-**For online platforms or submissions** (where full data is not available): Use the example dataset:
-```bash
-cp vector_survey_responses_example.csv vector_survey_responses.csv
-```
-
-This will run the pipeline on the 10-row example dataset.
-
-#### Step 4: Run the Full Analysis Pipeline
+#### **Step 3:** Run the Consolidated Analysis Pipeline
 
 ```bash
-Rscript --vanilla run_all_analyses.R
+Rscript --vanilla run_analysis.R
 ```
 
-This runs five key steps:
-1. **Data audit** → outputs participant flow and missingness reports
-2. **Descriptive statistics & correlations** → correlation heatmap and summary stats
-3. **Full-sample LMG analysis** → relative importance decomposition with bootstrap CIs
-4. **Subgroup analysis** → LMG stratified by role type, career stage, geography
-5. **SEM estimation** → structural equation model fit indices
-6. **Claim verification** → automated check of paper claims against code outputs
+This single script:
+- **Auto-detects data source:** Uses `vector_survey_responses.csv` if available (real data), otherwise uses example data for demonstration
+- **Executes full 6-step pipeline:** Data audit → Descriptive stats → LMG analysis → Subgroup analysis → SEM → Paper claim verification
+- **Generates 17 output files:** CSV results, PNG visualizations, session metadata in the `output/` directory
+- **Takes ~2-5 minutes** depending on your machine (bootstrap iterations: 1,000)
 
-#### Step 5: Review Outputs
+**Output files** are written to `output/` (git-ignored, generated freshly each run):
 
-All results are written to the `output/` directory:
-
-```bash
-ls -lh output/
+```
+relative_importance_results.csv       ← Main LMG rankings (Table 2)
+subgroup_analysis_results.csv        ← Stratified findings (role, stage, geography)
+sem_fit_indices.csv                  ← SEM model validation
+paper_claim_check.csv                ← Automated paper reproducibility audit
+correlation_heatmap.png              ← Visual predictor correlations
+relative_importance_barplot.png      ← Visual LMG rankings
+subgroup_top_predictors_comparison.png ← Subgroup comparison
+[11 additional CSV audit files]
 ```
 
-Key files:
-- `relative_importance_results.csv` — LMG rankings with 95% bootstrap CIs
-- `subgroup_analysis_results.csv` — subgroup-stratified results
-- `paper_claim_check.csv` — automated claim verification table
-- `correlation_heatmap.png`, `relative_importance_barplot.png` — visualizations
-- `session_info.txt` — reproducibility metadata
+#### **To Run with Your Own Data**
 
-#### Step 6: For Submissions & Quick Reproducibility
+If you have collected your own survey data using the standardized instrument:
 
-A self-contained reproducible example is also available in the `stats_appendix/` folder:
+1. Ensure your CSV has the same structure: ≥18 columns with Likert items in columns 8–18
+2. Save it as `vector_survey_responses.csv` in the root directory
+3. Run: `Rscript --vanilla run_analysis.R`
+4. Script automatically detects: "✓ Using real data: vector_survey_responses.csv"
 
-```bash
-cd stats_appendix
-Rscript reproduce_analysis.R
-```
-
-This focuses on the core relative importance analysis (no subgroups or SEM) and runs quickly on the example dataset. See [stats_appendix/README.md](stats_appendix/README.md) for details.
-
-#### Troubleshooting
+#### **Troubleshooting**
 
 | Issue | Solution |
 |-------|----------|
-| "Data file not found" | Ensure `vector_survey_responses.csv` is in the repository root. Check `getwd()` in R. |
-| Package installation fails | Update R to ≥4.0, ensure internet connectivity, install Linux build tools (see Step 2). |
-| Permission denied errors | Run with `chmod +x *.R` or use `Rscript --vanilla` (recommended). |
-| Memory issues on large datasets | Reduce bootstrap iterations in `run_all_analyses.R` line 170 (`R = 1000` → `R = 500`). |
+| "Missing package 'X'" | Run `install_dependencies.R` again or ensure internet connectivity |
+| "Data file not found" | Verify your CSV is named `vector_survey_responses.csv` in root directory (or use example) |
+| Permission errors on Linux | Try: `chmod +x *.R && Rscript --vanilla install_dependencies.R` |
+| Very slow on large N | Edit `run_analysis.R` line ~220: change `R = 1000` to `R = 500` for bootstrap iterations |
 
 ---
 
-## 4. Installation & Reproducibility
-
-### Requirements
-
-- R ≥ 4.0
-- Internet connection (initial package install only)
-
-### Quick Start
-
-```bash
-# Step 1: Install dependencies (one time)
-Rscript --vanilla install_dependencies.R
-
-# Step 2: Run full analysis pipeline
-Rscript --vanilla run_all_analyses.R
-```
-
-All outputs are written to `output/`.
-
-### Test with Example Data
-
-```bash
-cp vector_survey_responses_example.csv vector_survey_responses.csv
-Rscript --vanilla run_all_analyses.R
-```
-
----
+### 3.3 Complete-Case Accounting
 
 ## 5. Input Data Specification
 
@@ -242,14 +201,15 @@ paper-career-supplement/
 ├── SUPPLEMENT.md                            (academic methods)
 ├── VERIFICATION_REPORT.md                   (reproducibility audit)
 ├── install_dependencies.R                   (dependency installer)
-├── run_all_analyses.R                       (master script)
-├── vector_survey_responses.csv              (input data)
-├── vector_survey_responses_example.csv      (test dataset)
-├── stats_appendix/                          (submission-ready materials)
-│   ├── README.md
-│   ├── reproduce_analysis.R
-│   └── vector_survey_responses_example.csv
-└── output/                                  (git-ignored, generated)
+├── run_analysis.R                           (consolidated master script)
+├── vector_survey_responses.csv              (input data — not in git for privacy)
+├── vector_survey_responses_example.csv      (example dataset for demonstration)
+├── AUDIT_DOCUMENTATION/                     (validation and discrepancy reports)
+│   ├── FINDINGS_SUMMARY.txt
+│   ├── QUICK_FIX_CHECKLIST.md
+│   ├── MUSKAAN_DISCREPANCIES_REPORT.md
+│   └── SOURCE_OF_TRUTH_VALUES.md
+└── output/                                  (git-ignored, generated by run_analysis.R)
     ├── data_audit_summary.csv
     ├── participant_flow.csv
     ├── descriptive_statistics.csv
