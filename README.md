@@ -8,7 +8,6 @@
 **Amil Khanzada** — Graduate Research in Career Outcomes & Development
 
 [![R 4.0+](https://img.shields.io/badge/r-4.0%2B-blue.svg)](https://www.r-project.org/)
-[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![Data Audited](https://img.shields.io/badge/N%20complete-78-brightgreen.svg)](output/participant_flow.csv)
 [![Reproducible](https://img.shields.io/badge/reproducible-verified-brightgreen.svg)](VERIFICATION_REPORT.md)
 
@@ -104,20 +103,90 @@ From `output/participant_flow.csv`:
 - **Complete-case rows** (*q1*–*q11*): 78
 - **Excluded** (missing core items): 2
 
-### 3.2 Claim Verification
+### 3.2 Running the Analysis on a New Machine
 
-All paper claims are automatically checked against reproducible code outputs in `output/paper_claim_check.csv`. Current status:
+To reproduce all results from scratch on a clean machine:
 
-| Claim | Paper | Code | Status |
-|-------|-------|------|--------|
-| Full-sample R² | 0.575 | 0.575 | ✓ MATCH |
-| q3 (Leadership) | 17.2% | 17.2% | ✓ MATCH |
-| q2 (Communication) | 16.1% | 16.1% | ✓ MATCH |
-| q6 (Network Quality) | 15.7% | 15.7% | ✓ MATCH |
-| Student q3 | 23.3% | 23.3% | ✓ MATCH |
-| SEM CFI | 0.975* | 1.000 | — (external dataset) |
+#### Step 1: Clone the Repository
 
-*SEM fit indices were computed on the full private dataset by co-author Muskaan.*
+```bash
+git clone https://github.com/virufy/paper-career-supplement.git
+cd paper-career-supplement
+```
+
+#### Step 2: Install Dependencies
+
+```bash
+Rscript --vanilla install_dependencies.R
+```
+
+This installs all required R packages (relaimpo, car, lmtest, lavaan, boot, ggplot2, corrplot, psych, dplyr, ppcor).
+
+**On Linux (Ubuntu/Debian)**, you may first need system development tools:
+
+```bash
+sudo apt update && sudo apt install -y build-essential r-base-dev libcurl4-openssl-dev libxml2-dev libssl-dev
+```
+
+#### Step 3: Place Your Data File
+
+For **local reproduction with full data**: Ensure `vector_survey_responses.csv` is in the repository root directory. The file must contain at least 18 columns with core Likert items in columns 8–18 (mapped to q1–q11).
+
+**For online platforms or submissions** (where full data is not available): Use the example dataset:
+```bash
+cp vector_survey_responses_example.csv vector_survey_responses.csv
+```
+
+This will run the pipeline on the 10-row example dataset.
+
+#### Step 4: Run the Full Analysis Pipeline
+
+```bash
+Rscript --vanilla run_all_analyses.R
+```
+
+This runs five key steps:
+1. **Data audit** → outputs participant flow and missingness reports
+2. **Descriptive statistics & correlations** → correlation heatmap and summary stats
+3. **Full-sample LMG analysis** → relative importance decomposition with bootstrap CIs
+4. **Subgroup analysis** → LMG stratified by role type, career stage, geography
+5. **SEM estimation** → structural equation model fit indices
+6. **Claim verification** → automated check of paper claims against code outputs
+
+#### Step 5: Review Outputs
+
+All results are written to the `output/` directory:
+
+```bash
+ls -lh output/
+```
+
+Key files:
+- `relative_importance_results.csv` — LMG rankings with 95% bootstrap CIs
+- `subgroup_analysis_results.csv` — subgroup-stratified results
+- `paper_claim_check.csv` — automated claim verification table
+- `correlation_heatmap.png`, `relative_importance_barplot.png` — visualizations
+- `session_info.txt` — reproducibility metadata
+
+#### Step 6: For Submissions & Quick Reproducibility
+
+A self-contained reproducible example is also available in the `stats_appendix/` folder:
+
+```bash
+cd stats_appendix
+Rscript reproduce_analysis.R
+```
+
+This focuses on the core relative importance analysis (no subgroups or SEM) and runs quickly on the example dataset. See [stats_appendix/README.md](stats_appendix/README.md) for details.
+
+#### Troubleshooting
+
+| Issue | Solution |
+|-------|----------|
+| "Data file not found" | Ensure `vector_survey_responses.csv` is in the repository root. Check `getwd()` in R. |
+| Package installation fails | Update R to ≥4.0, ensure internet connectivity, install Linux build tools (see Step 2). |
+| Permission denied errors | Run with `chmod +x *.R` or use `Rscript --vanilla` (recommended). |
+| Memory issues on large datasets | Reduce bootstrap iterations in `run_all_analyses.R` line 170 (`R = 1000` → `R = 500`). |
 
 ---
 
@@ -172,11 +241,14 @@ paper-career-supplement/
 ├── DATA_DICTIONARY.md                       (variable mappings)
 ├── SUPPLEMENT.md                            (academic methods)
 ├── VERIFICATION_REPORT.md                   (reproducibility audit)
-├── LICENSE
 ├── install_dependencies.R                   (dependency installer)
 ├── run_all_analyses.R                       (master script)
 ├── vector_survey_responses.csv              (input data)
 ├── vector_survey_responses_example.csv      (test dataset)
+├── stats_appendix/                          (submission-ready materials)
+│   ├── README.md
+│   ├── reproduce_analysis.R
+│   └── vector_survey_responses_example.csv
 └── output/                                  (git-ignored, generated)
     ├── data_audit_summary.csv
     ├── participant_flow.csv
@@ -246,28 +318,13 @@ where *P* is the number of predictors and $\pi_j^{-1}$ indicates the permutation
 
 ---
 
-## 9. How to Cite
-
-```bibtex
-@software{khanzada2026vector,
-  author = {Khanzada, Amil},
-  title = {Project VECTOR: Reproducible Analysis Supplement},
-  year = {2026},
-  month = {March},
-  note = {GitHub repository for paper "From Volunteer to Vocation"},
-  url = {https://github.com/virufy/paper-career-supplement}
-}
-```
-
----
-
-## 10. Reproducibility & Scientific Integrity
+## 9. Reproducibility & Scientific Integrity
 
 This repository adheres to the **FAIR principles** (Findable, Accessible, Interoperable, Reusable):
 
 ✓ **Findable:** versioned, publicly available, documented metadata  
 ✓ **Accessible:** open-source code, example data included, dependency specifications  
 ✓ **Interoperable:** standard CSV outputs, standard R ecosystem  
-✓ **Reusable:** MIT License, standalone reproducible scripts  
+✓ **Reusable:** standalone reproducible scripts  
 
 All numeric claims in the paper are automatically verified against code output in `output/paper_claim_check.csv`. See [VERIFICATION_REPORT.md](VERIFICATION_REPORT.md) for full audit trail.
