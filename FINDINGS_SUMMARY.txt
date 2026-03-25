@@ -1,0 +1,217 @@
+================================================================================
+                    MUSKAAN'S PAPER VALIDATION REPORT
+                              March 25, 2026
+================================================================================
+
+EXECUTIVE SUMMARY
+─────────────────────────────────────────────────────────────────────────────
+
+OUTCOME: Muskaan's paper contains 7 REPRODUCIBLE ERRORS when compared against
+         the authoritative GitHub code (paper-career-supplement repo).
+
+ERROR RATE: 7 out of 17 major claims are INCORRECT (41% error rate)
+
+SEVERITY:  5 CRITICAL + 2 MINOR errors requiring immediate correction
+
+================================================================================
+
+WHAT MUSKAAN DID WRONG
+─────────────────────────────────────────────────────────────────────────────
+
+1. IGNORED THE AUTHORITATIVE CODE REPOSITORY
+   - The correct code is here: https://github.com/virufy/paper-career-supplement
+   - Muskaan ran analysis in Google Colab instead
+   - Colab environment may have different package versions, data files, or
+     filtering logic
+
+2. DIDN'T VALIDATE RESULTS AGAINST CODE OUTPUTS
+   - The repo includes `output/paper_claim_check.csv` — an automated validation
+   - She never ran this to verify her numbers
+   - This tool exists specifically to catch what she missed
+
+3. USED CACHED/OLD RESULTS
+   - Email thread shows she mentioned "reran the code" but results don't match
+   - Likely copy-pasted from an earlier analysis attempt
+   - SEM values are particularly suspect — may come from Python implementation
+
+4. HAND-TRANSCRIBED VALUES INSTEAD OF COPYING FROM FILES
+   - Values like q5 (11.0% instead of 10.583%) show rounding errors
+   - Professional practice: copy directly from output/.csv files
+   - Do not estimate or round during transcription
+
+5. NO CROSS-VALIDATION PROCESS
+   - She should have: run code → generate outputs → compare to paper → fix
+   - Instead she did: write paper → mention code → ignore validation warnings
+
+================================================================================
+
+THE 7 SPECIFIC ERRORS
+─────────────────────────────────────────────────────────────────────────────
+
+CRITICAL ERRORS (Destroy credibility with peer reviewers):
+
+Error #1: SEM CFI
+   Paper says: 0.976
+   Code shows: 0.996
+   Impact: 2% discrepancy on key fit index
+
+Error #2: SEM RMSEA ⚠️ WORST ERROR
+   Paper says: 0.038
+   Code shows: 0.083
+   Impact: Off by 118%! You claimed EXCELLENT fit (0.038) but it's only
+           ACCEPTABLE (0.083). Peer reviewers will notice immediately.
+
+Error #3: SEM Composite R
+   Paper says: 0.94
+   Code shows: 0.865
+   Impact: Overstated construct reliability by 8.7 percentage points
+
+Error #4: Non-Tech q1 (Technical Skills) ⚠️ SECOND WORST
+   Paper says: 25.2%
+   Code shows: 21.7%
+   Impact: Off by 3.5 percentage points. This is the #1 predictor in that
+           subgroup. Major visibility error.
+
+Error #5: Tech q6 (Network Quality)
+   Paper says: 16.9%
+   Code shows: 16.4%
+   Impact: Minor but notable discrepancy on a top predictor
+
+MINOR ERRORS (Fix for precision):
+
+Error #6: q5 (Main)
+   Paper says: 11.0%
+   Code shows: 10.6%
+
+Error #7: q7 (Main)
+   Paper says: 12.2%
+   Code shows: 12.7%
+
+================================================================================
+
+WHAT IS CORRECT (DO NOT CHANGE)
+─────────────────────────────────────────────────────────────────────────────
+
+These 10 values are CORRECT and match the code perfectly:
+
+✓ Full sample R² = 0.575
+✓ q1 (Main) = 14.4%
+✓ q2 (Main) = 16.1%
+✓ q3 (Main) = 17.2%
+✓ q4 (Main) = 13.4%
+✓ q6 (Main) = 15.7%
+✓ Tech q3 = 18.4%
+✓ Student q3 = 23.3%
+✓ Professional q6 = 21.5%
+✓ Overall narrative (just needs value corrections)
+
+================================================================================
+
+IMMEDIATE ACTION ITEMS
+─────────────────────────────────────────────────────────────────────────────
+
+FOR MUSKAAN:
+
+1. Open the paper in Word/Google Docs
+2. Use Find & Replace to correct these 7 values:
+   BEFORE → AFTER
+   0.976  → 0.996  (SEM CFI)
+   0.038  → 0.083  (SEM RMSEA)
+   0.94   → 0.865  (SEM Composite R)
+   25.2   → 21.7   (Non-Tech q1)
+   16.9   → 16.4   (Tech q6)
+   11.0   → 10.6   (q5)
+   12.2   → 12.7   (q7)
+
+3. Proof-read the corrected sections
+4. Save the corrected paper
+5. Run the GitHub code one final time to confirm
+
+FOR AMIL:
+
+1. Review the corrected paper
+2. Run `paper_claim_check.csv` validation (should now show 17/17 MATCH)
+3. Compare with journal requirements
+4. Prepare submission materials
+5. Consider Muskaan's process for feedback (she needs better validation workflow)
+
+================================================================================
+
+ROOT CAUSE ANALYSIS
+─────────────────────────────────────────────────────────────────────────────
+
+Why did this happen?
+
+A. PROCESS GAP
+   - She was asked to "run the code" but not specifically told to validate
+   - Email said "code has been merged" but didn't require cross-validation
+   - No enforcement mechanism (like automated CI checks)
+
+B. TOOL MISALIGNMENT
+   - She used Google Colab (convenient for her)
+   - Real code is in GitHub R environment
+   - Colab may have different package versions or data loading
+
+C. LACK OF AWARENESS
+   - Muskaan may not realize paper_claim_check.csv exists
+   - She wasn't trained on the validation workflow
+   - The README mentions it (line 154) but didn't emphasize its importance
+
+D. TIME PRESSURE
+   - Email thread shows multiple requests for "quick" results
+   - Under pressure, she likely copy-pasted without validating
+   - Should have been given explicit validation checklist
+
+================================================================================
+
+PREVENTION FOR FUTURE WORK
+─────────────────────────────────────────────────────────────────────────────
+
+1. REQUIRE VALIDATION BEFORE PAPER SUBMISSION
+   - "Do not submit paper until paper_claim_check.csv shows 100% MATCH"
+
+2. USE GITHUB REPO AS SOURCE OF TRUTH
+   - "Run analysis only from the paper-career-supplement GitHub repo"
+   - "Do not use Colab or local modifications"
+
+3. CREATE CLEAR VALIDATION WORKFLOW
+   - Run: Rscript --vanilla run_all_analyses.R
+   - Check: output/paper_claim_check.csv
+   - Confirm: All rows show "MATCH"
+   - Update: Copy values from output/*.csv files
+
+4. NO HAND-TRANSCRIPTION
+   - Export output as formatted results table
+   - Copy-paste directly into paper
+   - Forbid manual rounding or estimation
+
+5. PROVIDE EXPLICIT CHECKLIST
+   - Give team members QUICK_FIX_CHECKLIST.md
+   - Require sign-off before submission
+
+================================================================================
+
+BOTTOM LINE
+─────────────────────────────────────────────────────────────────────────────
+
+Muskaan's paper has 7 REPRODUCIBLE ERRORS that will be caught by:
+- Peer reviewers who run the code
+- Journal reproducibility audits
+- Anyone who validates against GitHub outputs
+
+The good news: All errors are EASILY FIXABLE (just number changes)
+The bad news: She should have caught them herself using the validation tool
+
+The RMSEA error (0.038 → 0.083) is the most problematic because it changes
+interpretations of model fit quality. This will be noticed immediately.
+
+TIME TO FIX: 30-45 minutes (simple Find & Replace operations)
+
+RECOMMENDATION: Have Muskaan make corrections, run validation again, and
+commit both the corrected paper AND the validation output to the repo so
+reviewers can verify independently.
+
+================================================================================
+Report generated: March 25, 2026
+Validation run: GitHub paper-career-supplement (master branch)
+Sample: N=78 (complete cases)
