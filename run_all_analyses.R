@@ -1,75 +1,90 @@
 ################################################################################
-# PROJECT VECTOR: COMPLETE ANALYSIS PIPELINE
+# Project VECTOR: Reproducible Analysis Pipeline
 # Usage: Rscript --vanilla run_all_analyses.R
-#
-# Sections:
-#   1. Setup & Data Loading
-#   2. Descriptive Statistics & Correlations
-#   3. Relative Importance Analysis (LMG)
-#   4. Demographic Subgroup Analysis
-#   5. Structural Equation Modeling (SEM)
-#   6. Paper Claim Verification
 ################################################################################
 
 options(repos = c(CRAN = "https://cloud.r-project.org"))
 
-pkgs <- c("lme4", "pbkrtest", "car", "lavaan", "dplyr", "ggplot2",
-          "corrplot", "relaimpo", "tidyr", "psych", "reshape2",
-          "gridExtra", "ppcor", "janitor", "stringr")
-for (p in pkgs) {
-  if (!require(p, character.only = TRUE, quietly = TRUE)) {
-    install.packages(p, dependencies = TRUE, quiet = TRUE)
-    library(p, character.only = TRUE, quietly = TRUE)
+required_pkgs <- c(
+  "boot", "car", "corrplot", "dplyr", "ggplot2", "lavaan", "lmtest",
+  "ppcor", "psych", "relaimpo"
+)
+
+for (pkg in required_pkgs) {
+  if (!require(pkg, character.only = TRUE, quietly = TRUE)) {
+    stop(sprintf("Missing package '%s'. Run install_dependencies.R first.", pkg))
   }
 }
 
-cat("\n")
-cat("================================================================================\n")
-cat("               PROJECT VECTOR: COMPREHENSIVE ANALYSIS PIPELINE                 \n")
-cat("================================================================================\n\n")
+set.seed(42)
+dir.create("output", showWarnings = FALSE)
 
-# ==============================================================================
-# 1. SETUP & DATA LOADING
-# ==============================================================================
+log_section <- function(title) {
+  cat("\n")
+  cat(strrep("=", 80), "\n", sep = "")
+  cat(title, "\n")
+  cat(strrep("=", 80), "\n", sep = "")
+}
+
+log_section("STEP 1: DATA LOADING AND AUDIT")
 
 csv_file <- "vector_survey_responses.csv"
 if (!file.exists(csv_file)) {
-  cat(sprintf("ERROR: Data file not found: %s\nCurrent directory: %s\n", csv_file, getwd()))
-  stop("Data file not found")
+  stop(sprintf("Data file not found: %s", csv_file))
 }
 
-df <- read.csv(csv_file, check.names = FALSE)
-colnames(df) <- make.unique(colnames(df))
+df_raw <- read.csv(csv_file, check.names = FALSE)
+colnames(df_raw) <- make.unique(colnames(df_raw))
 
-if (ncol(df) < 18) stop("Unexpected data structure: expected at least 18 columns")
-
-target_cols <- 8:18
-colnames(df)[target_cols] <- paste0("q", 1:11)
-df[target_cols] <- lapply(df[target_cols], function(x) as.numeric(as.character(x)))
-
-# Missing data report
-missing_counts <- colSums(is.na(df[target_cols]))
-if (any(missing_counts > 0)) {
-  cat("Missing data (listwise deletion applied):\n")
-  for (i in seq_along(missing_counts)) {
-    if (missing_counts[i] > 0)
-      cat(sprintf("  %s: %d (%.1f%%)\n", names(missing_counts)[i],
-                  missing_counts[i], 100 * missing_counts[i] / nrow(df)))
-  }
+if (ncol(df_raw) < 18) {
+  stop("Unexpected data structure: expected at least 18 columns")
 }
 
-n_before  <- nrow(df)
-df_clean  <- df[complete.cases(df[target_cols]), ]
-n_after   <- nrow(df_clean)
-cat(sprintf("\nData loaded: %d → %d complete responses\n", n_before, n_after))
-cat("Variables: q1-q11 (skills q1-q4, network q5-q7, outcomes q8-q11)\n\n")
+likert_cols <- 8:18
+question_names <- paste0("q", 1:11)
+colnames(df_raw)[likert_cols] <- question_names
 
-dir.create("output", showWarnings = FALSE)
+# Preserve non-Likert fields while forcing Likert fields to numeric for analysis.
+df_raw[likert_cols] <- lapply(df_raw[likert_cols], function(x) as.numeric(as.character(x)))
+
+audit <- data.frame(
+  metric = c(
+    "rows_in_input_csv",
+    "rows_with_complete_core_likert_items",
+    "rows_excluded_due_to_core_missingness"
+  ),
+  value = c(
+    nrow(df_raw),
+    sum(complete.cases(df_raw[question_names])),
+    nrow(df_raw) - sum(complete.cases(df_raw[question_names]))
+  )
+)
+
+write.csv(audit, "output/data_audit_summary.csv", row.names = FALSE)
+
+missing_per_item <- data.frame(
+  variable = question_names,
+  missing_n = colSums(is.na(df_raw[question_names])),
+  missing_pct = round(100 * colSums(is.na(df_raw[question_names])) / nrow(df_raw), 2)
+)
+write.csv(missing_per_item, "output/core_item_missingness.csv", row.names = FALSE)
+
+df <- df_raw[complete.cases(df_raw[question_names]), ]
+
+participant_flow <- data.frame(
+  stage = c("input_rows", "complete_core_likert", "excluded_core_missing"),
+  n = c(nrow(df_raw), nrow(df), nrow(df_raw) - nrow(df))
+)
+write.csv(participant_flow, "output/participant_flow.csv", row.names = FALSE)
+
+cat(sprintf("Input rows: %d\n", nrow(df_raw)))
+cat(sprintf("Complete rows used in primary analysis: %d\n", nrow(df)))
+cat(sprintf("Excluded due to core missingness: %d\n", nrow(df_raw) - nrow(df)))
 
 var_labels <- data.frame(
-  Variable = paste0("q", 1:11),
-  Category = c(rep("Skills", 4), rep("Network", 3), rep("Outcomes", 4)),
-  Description = c(
+  variable = question_names,
+  category = c(rep("Skills", 4), rep("Network", 3), rep("Outcomes", 4)),
+  description = c(
     "Technical Skills (Programming, Data Analysis)",
     "Communication Skills (Writing, Presentation)",
     "Leadership Skills (Guiding teams)",
@@ -79,366 +94,282 @@ var_labels <- data.frame(
     "Network Access (Professional circles)",
     "Overall Career Impact",
     "Resume Competitiveness",
-    "Job/Promotion Success (PRIMARY OUTCOME)",
+    "Job/Promotion Success (Primary Outcome)",
     "Leadership Role Advancement"
   )
 )
+write.csv(var_labels, "output/variable_labels.csv", row.names = FALSE)
 
-# ==============================================================================
-# 2. DESCRIPTIVE STATISTICS & CORRELATIONS
-# ==============================================================================
+log_section("STEP 2: DESCRIPTIVE STATISTICS AND CORRELATIONS")
 
-cat("=== DESCRIPTIVE STATISTICS ===\n")
-desc_stats <- describe(df_clean[, paste0("q", 1:11)])
-print(round(desc_stats[, c("mean", "sd", "median", "min", "max")], 2))
-cat("\n")
+desc <- psych::describe(df[question_names])
+desc_export <- cbind(variable = rownames(desc), desc[, c("n", "mean", "sd", "median", "min", "max")])
+rownames(desc_export) <- NULL
+write.csv(desc_export, "output/descriptive_statistics.csv", row.names = FALSE)
 
-cat("=== CORRELATION ANALYSIS ===\n")
-cor_matrix <- cor(df_clean[, paste0("q", 1:11)], use = "complete.obs", method = "spearman")
-
-cat("\nCorrelations with Job Success (q10):\n")
-q10_cors <- sort(cor_matrix[, "q10"], decreasing = TRUE)
-for (i in seq_along(q10_cors)) {
-  v <- names(q10_cors)[i]
-  cat(sprintf("  %s (%s): %.3f\n", v,
-              var_labels$Description[var_labels$Variable == v], q10_cors[i]))
-}
-cat("\n")
+cor_matrix <- cor(df[question_names], method = "spearman")
+write.csv(cor_matrix, "output/correlation_matrix.csv")
 
 png("output/correlation_heatmap.png", width = 1200, height = 1000, res = 120)
-corrplot(cor_matrix, method = "color", type = "full", order = "hclust",
-         addCoef.col = "black", number.cex = 0.7, tl.col = "black", tl.srt = 45,
-         col = colorRampPalette(c("#6D9EC1", "white", "#E46726"))(200),
-         title = "Project VECTOR: Full Correlation Matrix (Spearman)", mar = c(0,0,2,0))
-dev.off()
-cat("Correlation heatmap saved: output/correlation_heatmap.png\n\n")
-
-# ==============================================================================
-# 3. RELATIVE IMPORTANCE ANALYSIS (LMG)
-# ==============================================================================
-
-cat("=== RELATIVE IMPORTANCE ANALYSIS (LMG) ===\n")
-cat("Predictors: q1-q7  |  Outcome: q10 (Job/Promotion Success)\n\n")
-
-predictors_scaled <- as.data.frame(scale(df_clean[, paste0("q", 1:7)]))
-outcome_scaled    <- scale(df_clean$q10)
-full_model        <- lm(outcome_scaled ~ ., data = predictors_scaled)
-
-cat("--- Regression Model Summary ---\n")
-print(summary(full_model))
-
-cat("--- Multicollinearity (VIF) ---\n")
-vif_vals <- vif(full_model)
-print(round(vif_vals, 2))
-cat(sprintf("\nMax VIF = %.2f  (%s)\n\n", max(vif_vals),
-            ifelse(max(vif_vals) > 10, "CRITICAL: severe multicollinearity",
-                   ifelse(max(vif_vals) > 5, "CAUTION: moderate multicollinearity",
-                          "No multicollinearity concerns"))))
-
-# Regression diagnostics
-sw <- shapiro.test(residuals(full_model))
-cat(sprintf("Shapiro-Wilk: W=%.4f, p=%.4f  (%s)\n", sw$statistic, sw$p.value,
-            ifelse(sw$p.value < 0.05, "non-normal residuals", "residuals OK")))
-if (require("lmtest", quietly = TRUE)) {
-  bp <- lmtest::bptest(full_model)
-  cat(sprintf("Breusch-Pagan: BP=%.4f, p=%.4f  (%s)\n", bp$statistic, bp$p.value,
-              ifelse(bp$p.value < 0.05, "heteroscedasticity detected", "homoscedasticity OK")))
-}
-cooks_d   <- cooks.distance(full_model)
-threshold <- 4 / nrow(df_clean)
-n_inf     <- sum(cooks_d > threshold)
-cat(sprintf("Cook's D: %d influential observations (threshold=%.4f)\n\n", n_inf, threshold))
-
-png("output/regression_diagnostics.png", width = 1400, height = 1000, res = 120)
-par(mfrow = c(2, 2)); plot(full_model); dev.off()
-
-# LMG decomposition
-rel_imp <- calc.relimp(full_model, type = "lmg", rela = TRUE)
-importance_results <- data.frame(
-  Variable    = names(rel_imp$lmg),
-  LMG_Contribution = rel_imp$lmg * 100,
-  Description = var_labels$Description[1:7]
+corrplot::corrplot(
+  cor_matrix,
+  method = "color",
+  type = "full",
+  order = "hclust",
+  addCoef.col = "black",
+  number.cex = 0.7,
+  tl.col = "black",
+  tl.srt = 45,
+  col = colorRampPalette(c("#6D9EC1", "white", "#E46726"))(200),
+  title = "Project VECTOR: Spearman Correlation Matrix",
+  mar = c(0, 0, 2, 0)
 )
+dev.off()
 
-# Bootstrap CIs
-set.seed(42)
-boot_data <- cbind(predictors_scaled, q10_scaled = outcome_scaled)
-boot_fn   <- function(data, idx) {
-  m  <- lm(q10_scaled ~ ., data = data[idx, ])
-  calc.relimp(m, type = "lmg", rela = TRUE)$lmg * 100
+log_section("STEP 3: FULL SAMPLE LMG ANALYSIS")
+
+predictor_names <- paste0("q", 1:7)
+outcome_name <- "q10"
+
+x_scaled <- as.data.frame(scale(df[predictor_names]))
+y_scaled <- as.numeric(scale(df[[outcome_name]]))
+model_data <- x_scaled
+model_data$y <- y_scaled
+
+full_model <- lm(y ~ ., data = model_data)
+model_summary <- summary(full_model)
+
+vif_values <- car::vif(full_model)
+resid_sw <- shapiro.test(residuals(full_model))
+resid_bp <- lmtest::bptest(full_model)
+
+rel <- relaimpo::calc.relimp(full_model, type = "lmg", rela = TRUE)
+
+boot_fn <- function(data, idx) {
+  m <- lm(y ~ ., data = data[idx, ])
+  relaimpo::calc.relimp(m, type = "lmg", rela = TRUE)$lmg * 100
 }
-boot_res <- boot::boot(boot_data, boot_fn, R = 1000)
-importance_results$CI_Lower <- apply(boot_res$t, 2, quantile, 0.025, na.rm = TRUE)
-importance_results$CI_Upper <- apply(boot_res$t, 2, quantile, 0.975, na.rm = TRUE)
-importance_results <- importance_results[order(-importance_results$LMG_Contribution), ]
+boot_res <- boot::boot(model_data, boot_fn, R = 1000)
 
-cat("RANKED PREDICTORS (by contribution to R²):\n")
-for (i in seq_len(nrow(importance_results))) {
-  cat(sprintf("%d. %s (%s): %.1f%% [95%% CI: %.1f%% - %.1f%%]\n", i,
-              importance_results$Variable[i], importance_results$Description[i],
-              importance_results$LMG_Contribution[i],
-              importance_results$CI_Lower[i], importance_results$CI_Upper[i]))
-}
-cat(sprintf("\nModel R² = %.3f (explains %.1f%% of variance in job success)\n\n",
-            summary(full_model)$r.squared, summary(full_model)$r.squared * 100))
+importance <- data.frame(
+  variable = names(rel$lmg),
+  lmg_pct = as.numeric(rel$lmg) * 100,
+  ci_lower = apply(boot_res$t, 2, quantile, probs = 0.025, na.rm = TRUE),
+  ci_upper = apply(boot_res$t, 2, quantile, probs = 0.975, na.rm = TRUE)
+)
+importance$description <- var_labels$description[match(importance$variable, var_labels$variable)]
+importance <- importance[order(-importance$lmg_pct), ]
+write.csv(importance, "output/relative_importance_results.csv", row.names = FALSE)
 
-# Barplot
+diagnostics <- data.frame(
+  metric = c("n", "r_squared", "adj_r_squared", "f_statistic", "f_p_value", "max_vif", "shapiro_p", "breusch_pagan_p"),
+  value = c(
+    nrow(df),
+    model_summary$r.squared,
+    model_summary$adj.r.squared,
+    unname(model_summary$fstatistic[1]),
+    pf(model_summary$fstatistic[1], model_summary$fstatistic[2], model_summary$fstatistic[3], lower.tail = FALSE),
+    max(vif_values),
+    resid_sw$p.value,
+    resid_bp$p.value
+  )
+)
+write.csv(diagnostics, "output/full_model_diagnostics.csv", row.names = FALSE)
+
 png("output/relative_importance_barplot.png", width = 1400, height = 800, res = 120)
 par(mar = c(8, 5, 4, 2))
-barplot(importance_results$LMG_Contribution,
-        names.arg = paste0(importance_results$Variable, "\n",
-                           substr(importance_results$Description, 1, 20)),
-        las = 2, col = colorRampPalette(c("#E46726", "#F4A261", "#6D9EC1"))(7),
-        main = "Relative Importance of Predictors for Career Success (LMG)",
-        ylab = "Contribution to R² (%)",
-        ylim = c(0, max(importance_results$LMG_Contribution) * 1.2))
-text(x = seq_len(nrow(importance_results)) * 1.2 - 0.5,
-     y = importance_results$LMG_Contribution + 0.5,
-     labels = sprintf("%.1f%%", importance_results$LMG_Contribution), cex = 0.9, font = 2)
+barplot(
+  importance$lmg_pct,
+  names.arg = paste0(importance$variable, "\n", substr(importance$description, 1, 24)),
+  las = 2,
+  col = colorRampPalette(c("#E46726", "#F4A261", "#6D9EC1"))(nrow(importance)),
+  main = "Relative Importance of Predictors for Job/Promotion Success",
+  ylab = "Contribution to R-squared (%)",
+  ylim = c(0, max(importance$lmg_pct) * 1.2)
+)
+text(
+  x = seq_len(nrow(importance)) * 1.2 - 0.5,
+  y = importance$lmg_pct + 0.5,
+  labels = sprintf("%.1f%%", importance$lmg_pct),
+  cex = 0.9,
+  font = 2
+)
 dev.off()
-cat("Relative importance barplot saved: output/relative_importance_barplot.png\n\n")
 
-# Head-to-head comparisons
-cat("=== HEAD-TO-HEAD COMPARISONS ===\n")
-for (pair in list(c("q1","q4"), c("q2","q4"), c("q3","q4"), c("q1","q3"))) {
-  m    <- lm(scale(df_clean$q10) ~ scale(df_clean[[pair[1]]]) + scale(df_clean[[pair[2]]]))
-  coef <- summary(m)$coefficients
-  l1   <- var_labels$Description[var_labels$Variable == pair[1]]
-  l2   <- var_labels$Description[var_labels$Variable == pair[2]]
-  cat(sprintf("\n%s vs %s:\n  %s: b=%.3f (p=%.4f)\n  %s: b=%.3f (p=%.4f)\n  -> %s is STRONGER\n",
-              pair[1], pair[2],
-              substr(l1, 1, 35), coef[2,1], coef[2,4],
-              substr(l2, 1, 35), coef[3,1], coef[3,4],
-              ifelse(coef[2,1] > coef[3,1], pair[1], pair[2])))
-}
+log_section("STEP 4: DEMOGRAPHIC SUBGROUP ANALYSIS")
 
-# Partial correlations
-cat("\n=== PARTIAL CORRELATION ANALYSIS ===\n")
-pcor_data <- df_clean[, paste0("q", 1:7)]
-pcor_data$outcome <- df_clean$q10
-pcor_res  <- pcor(pcor_data)
-pcors     <- sort(pcor_res$estimate[1:7, 8], decreasing = TRUE)
-names(pcors) <- paste0("q", 1:7)[order(pcor_res$estimate[1:7, 8], decreasing = TRUE)]
-for (i in seq_along(pcors)) {
-  v <- names(pcors)[i]
-  cat(sprintf("  %s (%s): %.3f\n", v,
-              var_labels$Description[var_labels$Variable == v], pcors[i]))
-}
-cat("\n")
+tech_kw <- "App Dev|Web Dev|ML Engineering|Data Scientist|Cloud|IT|Engineer|Developer"
+west_kw <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore"
 
-# Export
-write.csv(importance_results, "output/relative_importance_results.csv", row.names = FALSE)
-write.csv(cor_matrix,         "output/correlation_matrix.csv")
-write.csv(var_labels,         "output/variable_labels.csv", row.names = FALSE)
-cat("Main analysis results exported to output/\n\n")
+df$role_type <- ifelse(grepl(tech_kw, df[[6]], ignore.case = TRUE), "Tech", "Non-Tech")
+df$career_stage <- ifelse(
+  grepl("student|undergraduate|master|doctoral|phd|high school", df[[4]], ignore.case = TRUE),
+  "Student",
+  "Professional"
+)
+df$geography <- ifelse(grepl(west_kw, df[[5]], ignore.case = TRUE), "Global_West", "Global_South")
 
-# ==============================================================================
-# 4. DEMOGRAPHIC SUBGROUP ANALYSIS
-# ==============================================================================
+subgroup_counts <- data.frame(
+  group = c("Role: Tech", "Role: Non-Tech", "Stage: Student", "Stage: Professional", "Geo: Global_West", "Geo: Global_South"),
+  n = c(
+    sum(df$role_type == "Tech"),
+    sum(df$role_type == "Non-Tech"),
+    sum(df$career_stage == "Student"),
+    sum(df$career_stage == "Professional"),
+    sum(df$geography == "Global_West"),
+    sum(df$geography == "Global_South")
+  )
+)
+write.csv(subgroup_counts, "output/subgroup_counts.csv", row.names = FALSE)
 
-cat("================================================================================\n")
-cat("  STEP 4: DEMOGRAPHIC SUBGROUP ANALYSIS\n")
-cat("================================================================================\n\n")
-
-# Demographic classification
-# Column 4 = career stage  |  Column 5 = country  |  Column 6 = role
-tech_kw  <- "App Dev|Web Dev|ML Engineering|Data Scientist|Cloud|IT|Engineer|Developer"
-west_kw  <- "United States|USA|Canada|UK|United Kingdom|Japan|Australia|Singapore"
-
-df_clean$Role_Type    <- ifelse(grepl(tech_kw,  df_clean[[6]], ignore.case = TRUE), "Tech", "Non-Tech")
-df_clean$Career_Stage <- ifelse(grepl("student|undergraduate|master|doctoral|phd|high school",
-                                      df_clean[[4]], ignore.case = TRUE), "Student", "Professional")
-df_clean$Geography    <- ifelse(grepl(west_kw,  df_clean[[5]], ignore.case = TRUE), "Global_West", "Global_South")
-
-cat(sprintf("Role:    Tech=%d | Non-Tech=%d\n",
-            sum(df_clean$Role_Type == "Tech"), sum(df_clean$Role_Type == "Non-Tech")))
-cat(sprintf("Stage:   Student=%d | Professional=%d\n",
-            sum(df_clean$Career_Stage == "Student"), sum(df_clean$Career_Stage == "Professional")))
-cat(sprintf("Geo:     Global_West=%d | Global_South=%d\n\n",
-            sum(df_clean$Geography == "Global_West"), sum(df_clean$Geography == "Global_South")))
-
-# Subgroup LMG function
-analyze_subgroup <- function(data, group_name) {
-  if (nrow(data) < 15) {
-    cat(sprintf("%s: Sample too small (n=%d) - skipping\n\n", group_name, nrow(data)))
+run_subgroup_lmg <- function(dat, group_name, min_n = 15) {
+  if (nrow(dat) < min_n) {
     return(NULL)
   }
-  preds <- data[, paste0("q", 1:7)]
-  out   <- data$q10
-  cc    <- complete.cases(preds, out); preds <- preds[cc,]; out <- out[cc]
-  if (length(out) < 15) { cat("Insufficient complete cases\n\n"); return(NULL) }
 
-  m   <- lm(scale(out) ~ ., data = as.data.frame(scale(preds)))
-  ri  <- calc.relimp(m, type = "lmg", rela = TRUE)
-  res <- data.frame(Variable = names(ri$lmg), Contribution = ri$lmg * 100)
-  res <- res[order(-res$Contribution), ]
+  subgroup_x <- as.data.frame(scale(dat[predictor_names]))
+  subgroup_y <- as.numeric(scale(dat[[outcome_name]]))
+  subgroup_data <- subgroup_x
+  subgroup_data$y <- subgroup_y
 
-  cat(sprintf("--- %s (n=%d, R²=%.3f) ---\n", group_name, length(out), summary(m)$r.squared))
-  cat("Top 3 Predictors:\n")
-  for (i in 1:min(3, nrow(res))) cat(sprintf("  %d. %s: %.1f%%\n", i, res$Variable[i], res$Contribution[i]))
-  cat("\n")
+  m <- lm(y ~ ., data = subgroup_data)
+  ri <- relaimpo::calc.relimp(m, type = "lmg", rela = TRUE)
 
-  res$Group <- group_name
-  res
+  out <- data.frame(
+    variable = names(ri$lmg),
+    contribution_pct = as.numeric(ri$lmg) * 100,
+    group = group_name,
+    n = nrow(dat),
+    r_squared = summary(m)$r.squared
+  )
+
+  out[order(-out$contribution_pct), ]
 }
 
-all_subgroup_results <- list()
-
-for (role in unique(df_clean$Role_Type)) {
-  r <- analyze_subgroup(df_clean[df_clean$Role_Type == role, ], paste("Role:", role))
-  if (!is.null(r)) all_subgroup_results[[paste("Role", role)]] <- r
+subgroup_results <- list()
+for (role in sort(unique(df$role_type))) {
+  subgroup_results[[paste("Role", role)]] <- run_subgroup_lmg(df[df$role_type == role, ], paste("Role:", role))
 }
-for (stage in unique(df_clean$Career_Stage)) {
-  r <- analyze_subgroup(df_clean[df_clean$Career_Stage == stage, ], paste("Stage:", stage))
-  if (!is.null(r)) all_subgroup_results[[paste("Stage", stage)]] <- r
+for (stage in sort(unique(df$career_stage))) {
+  subgroup_results[[paste("Stage", stage)]] <- run_subgroup_lmg(df[df$career_stage == stage, ], paste("Stage:", stage))
 }
-for (geo in unique(df_clean$Geography)) {
-  r <- analyze_subgroup(df_clean[df_clean$Geography == geo, ], paste("Geo:", geo))
-  if (!is.null(r)) all_subgroup_results[[paste("Geo", geo)]] <- r
+for (geo in sort(unique(df$geography))) {
+  subgroup_results[[paste("Geo", geo)]] <- run_subgroup_lmg(df[df$geography == geo, ], paste("Geo:", geo))
 }
 
-# Subgroup comparison plot
-if (length(all_subgroup_results) > 0) {
-  combined <- do.call(rbind, all_subgroup_results)
+subgroup_results <- subgroup_results[!vapply(subgroup_results, is.null, logical(1))]
 
+if (length(subgroup_results) > 0) {
+  subgroup_df <- do.call(rbind, subgroup_results)
+  rownames(subgroup_df) <- NULL
+  write.csv(subgroup_df, "output/subgroup_analysis_results.csv", row.names = FALSE)
+
+  plot_df <- subgroup_df[subgroup_df$variable %in% c("q1", "q2", "q3", "q4"), ]
   png("output/subgroup_top_predictors_comparison.png", width = 1400, height = 800, res = 120)
   print(
-    ggplot(combined[combined$Variable %in% paste0("q", 1:4), ],
-           aes(x = Group, y = Contribution, fill = Variable)) +
-      geom_bar(stat = "identity", position = "dodge") +
+    ggplot(plot_df, aes(x = group, y = contribution_pct, fill = variable)) +
+      geom_col(position = "dodge") +
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-      labs(title = "Predictor Contribution to Career Success by Demographic Group",
-           x = "Group", y = "Contribution to R² (%)") +
-      scale_fill_brewer(palette = "Set2",
-                        labels = c("q1: Technical", "q2: Communication",
-                                   "q3: Leadership", "q4: Time Mgmt"))
+      labs(
+        title = "Predictor Contribution to Job Success by Subgroup",
+        x = "Subgroup",
+        y = "Contribution to R-squared (%)"
+      )
   )
   dev.off()
-  cat("Subgroup comparison plot saved: output/subgroup_top_predictors_comparison.png\n")
-
-  write.csv(combined, "output/subgroup_analysis_results.csv", row.names = FALSE)
-  cat("Subgroup results exported to: output/subgroup_analysis_results.csv\n\n")
 }
 
-# Interaction tests
-cat("=== INTERACTION EFFECT TESTS ===\n")
-df_clean$Role_num  <- ifelse(df_clean$Role_Type == "Tech", 1, 0)
-df_clean$Stage_num <- ifelse(df_clean$Career_Stage == "Student", 1, 0)
-
-int1 <- lm(q10 ~ q1 * Role_num,  data = df_clean); s1 <- summary(int1)$coefficients
-int2 <- lm(q10 ~ q4 * Stage_num, data = df_clean); s2 <- summary(int2)$coefficients
-cat(sprintf("Role x Technical:       b=%.3f, p=%.4f  -> %s\n",
-            s1[4,1], s1[4,4], ifelse(s1[4,4] < 0.05, "SIGNIFICANT", "Not significant")))
-cat(sprintf("Career Stage x TimeMgmt: b=%.3f, p=%.4f  -> %s\n\n",
-            s2[4,1], s2[4,4], ifelse(s2[4,4] < 0.05, "SIGNIFICANT", "Not significant")))
-
-# ==============================================================================
-# 5. STRUCTURAL EQUATION MODELING (SEM)
-# ==============================================================================
-
-cat("================================================================================\n")
-cat("  STEP 5: STRUCTURAL EQUATION MODELING (SEM)\n")
-cat("================================================================================\n\n")
+log_section("STEP 5: SEM")
 
 sem_model <- '
   Skill_Development =~ q1 + q2 + q3 + q4
   Networking        =~ q5 + q6 + q7
   Career_Outcomes   =~ q9 + q10 + q11
-  Career_Outcomes   ~  Skill_Development + Networking
+  Career_Outcomes   ~ Skill_Development + Networking
 '
-fit <- sem(sem_model, data = df_clean,
-           ordered = c("q1","q2","q3","q4","q5","q6","q7","q9","q10","q11"))
 
-cat("--- SEM Results ---\n")
-summary(fit, standardized = TRUE, fit.measures = TRUE, rsquare = TRUE)
-
-idx <- fitMeasures(fit, c("cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr"))
-cat("\n=== MODEL FIT INDICES ===\n")
-cat(sprintf("  CFI   = %.3f  (>0.95 required)   %s\n", idx["cfi"],  ifelse(idx["cfi"]  >= 0.95, "PASS", "FAIL")))
-cat(sprintf("  TLI   = %.3f  (>0.95 required)   %s\n", idx["tli"],  ifelse(idx["tli"]  >= 0.95, "PASS", "FAIL")))
-cat(sprintf("  RMSEA = %.3f  (<0.06 required)   %s\n", idx["rmsea"],ifelse(idx["rmsea"] <= 0.06, "PASS", "FAIL")))
-cat(sprintf("  SRMR  = %.3f  (<0.08 required)   %s\n\n", idx["srmr"],ifelse(idx["srmr"] <= 0.08, "PASS", "FAIL")))
-
-df_clean$HC <- rowMeans(df_clean[, c("q1","q2","q3","q4")], na.rm = TRUE)
-df_clean$SC <- rowMeans(df_clean[, c("q5","q6","q7")],      na.rm = TRUE)
-r_comp <- cor(df_clean$HC, df_clean$SC)
-cat(sprintf("Composite r (Human Capital vs Social Capital): %.3f\n\n", r_comp))
-
-fit_df <- data.frame(
-  Index = c("CFI","TLI","RMSEA","RMSEA_CI_lower","RMSEA_CI_upper","SRMR","HC_SC_composite_r","N"),
-  Value = c(round(idx["cfi"],3), round(idx["tli"],3), round(idx["rmsea"],3),
-            round(idx["rmsea.ci.lower"],3), round(idx["rmsea.ci.upper"],3),
-            round(idx["srmr"],3), round(r_comp,3), nrow(df_clean))
+fit <- lavaan::sem(
+  sem_model,
+  data = df,
+  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q9", "q10", "q11")
 )
-write.csv(fit_df, "output/sem_fit_indices.csv", row.names = FALSE)
-cat("SEM fit indices saved: output/sem_fit_indices.csv\n\n")
 
-# ==============================================================================
-# 6. PAPER CLAIM VERIFICATION
-# ==============================================================================
+fit_idx <- lavaan::fitMeasures(
+  fit,
+  c("cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
+)
 
-cat("================================================================================\n")
-cat("  STEP 6: PAPER CLAIM VERIFICATION\n")
-cat("================================================================================\n\n")
+df$hc_composite <- rowMeans(df[, c("q1", "q2", "q3", "q4")], na.rm = TRUE)
+df$sc_composite <- rowMeans(df[, c("q5", "q6", "q7")], na.rm = TRUE)
+comp_r <- cor(df$hc_composite, df$sc_composite)
 
-chk <- function(got, expected, tol = 0.02) ifelse(abs(got - expected) <= tol, "MATCH", "MISMATCH")
+sem_export <- data.frame(
+  index = c("CFI", "TLI", "RMSEA", "RMSEA_CI_LOWER", "RMSEA_CI_UPPER", "SRMR", "HC_SC_COMPOSITE_R", "N"),
+  value = c(
+    round(fit_idx["cfi"], 3),
+    round(fit_idx["tli"], 3),
+    round(fit_idx["rmsea"], 3),
+    round(fit_idx["rmsea.ci.lower"], 3),
+    round(fit_idx["rmsea.ci.upper"], 3),
+    round(fit_idx["srmr"], 3),
+    round(comp_r, 3),
+    nrow(df)
+  )
+)
+write.csv(sem_export, "output/sem_fit_indices.csv", row.names = FALSE)
 
-lmg_v <- round(rel_imp$lmg * 100, 1)
-paper_t2 <- c(q1=14.4, q2=16.1, q3=17.2, q4=13.4, q5=11.0, q6=15.7, q7=12.2)
-r2_v <- round(summary(full_model)$r.squared, 3)
+log_section("STEP 6: PAPER CLAIM CHECK")
 
-run_lmg_sub <- function(data) {
-  p <- as.data.frame(scale(data[, paste0("q", 1:7)]))
-  o <- scale(data$q10); cc <- complete.cases(p, o); p <- p[cc,]; o <- o[cc]
-  if (length(o) < 15) return(NULL)
-  m  <- lm(o ~ ., data = p)
-  ri <- calc.relimp(m, type = "lmg", rela = TRUE)
-  sort(ri$lmg * 100, decreasing = TRUE)
+claim_rows <- list()
+
+add_claim <- function(claim, paper_value, code_value, tolerance) {
+  status <- ifelse(abs(code_value - paper_value) <= tolerance, "MATCH", "MISMATCH")
+  data.frame(
+    claim = claim,
+    paper_value = paper_value,
+    code_value = round(code_value, 3),
+    tolerance = tolerance,
+    status = status
+  )
 }
 
-tech_res    <- run_lmg_sub(df_clean[df_clean$Role_Type    == "Tech",        ])
-nontech_res <- run_lmg_sub(df_clean[df_clean$Role_Type    == "Non-Tech",    ])
-student_res <- run_lmg_sub(df_clean[df_clean$Career_Stage == "Student",     ])
-prof_res    <- run_lmg_sub(df_clean[df_clean$Career_Stage == "Professional",])
+paper_table2 <- c(q1 = 14.4, q2 = 16.1, q3 = 17.2, q4 = 13.4, q5 = 11.0, q6 = 15.7, q7 = 12.2)
+code_table2 <- setNames(importance$lmg_pct, importance$variable)
 
-cat("  Claim                              | Paper   | Code    | Status\n")
-cat("  -----------------------------------|---------|---------|----------\n")
-cat(sprintf("  SEM CFI                            | 0.975   | %.3f   | %s\n", idx["cfi"],   chk(idx["cfi"],   0.975, 0.005)))
-cat(sprintf("  SEM RMSEA                          | 0.039   | %.3f   | %s\n", idx["rmsea"], chk(idx["rmsea"], 0.039, 0.005)))
-cat(sprintf("  Composite r (HC vs SC)             | 0.940   | %.3f   | %s\n", r_comp,       chk(r_comp, 0.94, 0.02)))
-cat(sprintf("  Full-sample R2                     | 0.575   | %.3f   | %s\n", r2_v,         chk(r2_v, 0.575, 0.001)))
-for (v in paste0("q", 1:7))
-  cat(sprintf("  Table 2 %-5s                      | %5.1f%%  | %5.1f%%  | %s\n",
-              v, paper_t2[v], lmg_v[v], chk(lmg_v[v], paper_t2[v], 0.2)))
-if (!is.null(tech_res)) {
-  cat(sprintf("  Tech subgroup q3 (Leadership)      | 18.4%%   | %.1f%%   | %s\n", tech_res["q3"],    chk(tech_res["q3"],    18.4, 0.2)))
-  cat(sprintf("  Tech subgroup q6 (Net Quality)     | 16.9%%   | %.1f%%   | %s\n", tech_res["q6"],    chk(tech_res["q6"],    16.9, 0.2)))
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.975, fit_idx["cfi"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.039, fit_idx["rmsea"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.940, comp_r, 0.020)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("FULL_SAMPLE_R2", 0.575, model_summary$r.squared, 0.001)
+
+for (v in names(paper_table2)) {
+  claim_rows[[length(claim_rows) + 1]] <- add_claim(
+    paste0("TABLE2_", v),
+    paper_table2[[v]],
+    code_table2[[v]],
+    0.2
+  )
 }
-if (!is.null(nontech_res))
-  cat(sprintf("  Non-Tech subgroup q1 (Technical)   | 25.2%%   | %.1f%%   | %s\n", nontech_res["q1"], chk(nontech_res["q1"], 25.2, 0.2)))
-if (!is.null(student_res))
-  cat(sprintf("  Student subgroup q3 (Leadership)   | 23.3%%   | %.1f%%   | %s\n", student_res["q3"], chk(student_res["q3"], 23.3, 0.2)))
-if (!is.null(prof_res))
-  cat(sprintf("  Prof subgroup q4 (Time Mgmt)       | 17.8%%   | %.1f%%   | %s\n", prof_res["q4"],    chk(prof_res["q4"],    17.8, 0.2)))
 
-cat("\n  Note: SEM/composite r mismatches are expected on the anonymized local dataset.\n")
-cat("  Published SEM results (CFI=0.975, RMSEA=0.039) were run on the full dataset.\n\n")
+if (exists("subgroup_df")) {
+  subgroup_lookup <- function(group_name, var_name) {
+    subset_row <- subgroup_df[subgroup_df$group == group_name & subgroup_df$variable == var_name, ]
+    if (nrow(subset_row) == 0) {
+      return(NA_real_)
+    }
+    subset_row$contribution_pct[1]
+  }
 
-# ==============================================================================
-# DONE
-# ==============================================================================
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q3", 18.4, subgroup_lookup("Role: Tech", "q3"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q6", 16.9, subgroup_lookup("Role: Tech", "q6"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("NONTECH_Q1", 25.2, subgroup_lookup("Role: Non-Tech", "q1"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("STUDENT_Q3", 23.3, subgroup_lookup("Stage: Student", "q3"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("PROF_Q4", 17.8, subgroup_lookup("Stage: Professional", "q4"), 0.2)
+}
 
-cat("================================================================================\n")
-cat("  ANALYSIS COMPLETE\n")
-cat("================================================================================\n\n")
-cat("Output files:\n")
-cat("  output/correlation_heatmap.png\n")
-cat("  output/regression_diagnostics.png\n")
-cat("  output/relative_importance_barplot.png\n")
-cat("  output/subgroup_top_predictors_comparison.png\n")
-cat("  output/correlation_matrix.csv\n")
-cat("  output/relative_importance_results.csv\n")
-cat("  output/variable_labels.csv\n")
-cat("  output/subgroup_analysis_results.csv\n")
-cat("  output/sem_fit_indices.csv\n\n")
+claim_check <- do.call(rbind, claim_rows)
+write.csv(claim_check, "output/paper_claim_check.csv", row.names = FALSE)
+
+capture.output(sessionInfo(), file = "output/session_info.txt")
+
+cat("\nAnalysis complete. Key outputs written to output/ directory.\n")

@@ -1,163 +1,100 @@
-# Project VECTOR: Volunteer Career Outcomes Analysis
+# Project VECTOR: Career Impact Analysis Supplement
 
-An R analysis pipeline for the paper *"From Volunteer to Vocation: The Career Impact of Skill and Network Development in a Global Tech Nonprofit."*
+This repository contains a reproducible R pipeline for the paper:
 
-Quantifies the career ROI of skill-based volunteering using Relative Importance Analysis (LMG), Structural Equation Modeling (SEM), and demographic subgroup analysis across 78 Virufy volunteers.
+"From Volunteer to Vocation: The Career Impact of Skill and Network Development in a Global Tech Nonprofit."
+
+The pipeline performs:
+- data audit and complete-case accounting
+- full-sample relative importance analysis (LMG)
+- subgroup LMG analysis
+- SEM fit estimation
+- paper-claim verification against code outputs
+
+## Requirements
+
+- R 4.0+
+- internet connection for initial package install
 
 ## Quick Start
 
-### Prerequisites
-- R 4.0+
-- Internet connection (for package installation)
-
-### Run in 2 Steps
-
 ```bash
-# Step 1: Install dependencies (~5-10 min first time)
+# 1) Install dependencies once
 Rscript --vanilla install_dependencies.R
 
-# Step 2: Run all analyses
+# 2) Run full analysis
 Rscript --vanilla run_all_analyses.R
 ```
 
-Outputs go to `output/` folder.
+All analysis artifacts are written to `output/`.
 
-### Test with Example Data
-```bash
-cp vector_survey_responses_example.csv vector_survey_responses.csv
-Rscript --vanilla run_all_analyses.R
-```
+## Input Data Contract
 
----
+- file: `vector_survey_responses.csv`
+- expected minimum columns: 18
+- core Likert items: columns 8-18, mapped to `q1` through `q11`
+- primary outcome for LMG models: `q10` (Job/Promotion Success)
 
-## What the Pipeline Does
+Rows with any missing value in `q1` to `q11` are excluded for primary analysis (complete-case strategy).
 
-`run_all_analyses.R` runs four steps in order:
+## Repository Layout
 
-| Step | Script | Purpose |
-|---|---|---|
-| 1 | `vector_comprehensive_analysis.R` | Descriptive stats, LMG relative importance, correlation heatmap, head-to-head comparisons |
-| 2 | `vector_subgroup_analysis.R` | LMG by role type (Tech/Non-Tech) and career stage (Student/Professional) |
-| 3 | `vector_sem_analysis.R` | SEM with WLSMV estimator; reports CFI, RMSEA, SRMR |
-| 4 | *(inline in run_all_analyses.R)* | Verifies code output against paper's reported figures |
-
----
-
-## Project Structure
-
-```
+```text
 paper-career-supplement/
-├── README.md
-├── vector_survey_responses.csv            # Your survey data (replace with real data)
-├── vector_survey_responses_example.csv    # 10-row test dataset
-├── .gitignore
-├── install_dependencies.R                 # One-time package install
-├── run_all_analyses.R                     # Master script (runs all 4 steps)
-├── vector_comprehensive_analysis.R        # Step 1: LMG + correlations
-├── vector_subgroup_analysis.R             # Step 2: Demographic subgroups
-├── vector_sem_analysis.R                  # Step 3: SEM construct validity
-└── output/                                # Generated outputs (git-ignored)
-    ├── correlation_heatmap.png
-    ├── relative_importance_barplot.png
-    ├── subgroup_top_predictors_comparison.png
-    ├── correlation_matrix.csv
-    ├── relative_importance_results.csv
-    ├── variable_labels.csv
-    ├── subgroup_analysis_results.csv
-    └── sem_fit_indices.csv
+  install_dependencies.R
+  run_all_analyses.R
+  vector_survey_responses.csv
+  vector_survey_responses_example.csv
+  output/
 ```
 
----
+## Main Outputs
 
-## Input Data Format
+### Data quality and flow
+- `output/data_audit_summary.csv`
+- `output/core_item_missingness.csv`
+- `output/participant_flow.csv`
 
-- **File:** `vector_survey_responses.csv`
-- **Columns 8–18:** Likert-scale responses (1–5), automatically renamed q1–q11
-- **Minimum n:** 30; n ≥ 50 recommended for subgroup analysis
+### Full-sample analysis
+- `output/descriptive_statistics.csv`
+- `output/correlation_matrix.csv`
+- `output/correlation_heatmap.png`
+- `output/relative_importance_results.csv`
+- `output/relative_importance_barplot.png`
+- `output/full_model_diagnostics.csv`
 
-### Variable Definitions
+### Subgroup analysis
+- `output/subgroup_counts.csv`
+- `output/subgroup_analysis_results.csv`
+- `output/subgroup_top_predictors_comparison.png`
 
-| Variable | Category | Description |
-|---|---|---|
-| q1 | Skills | Technical Skills (Programming, Data Analysis) |
-| q2 | Skills | Communication Skills (Writing, Presentation) |
-| q3 | Skills | Leadership Skills (Guiding teams) |
-| q4 | Skills | Time Management (Organization, Deadlines) |
-| q5 | Network | Network Size (Quantity of connections) |
-| q6 | Network | Network Quality (Insights/Advice) |
-| q7 | Network | Network Access (Professional circles) |
-| q8 | Outcomes | Overall Career Impact |
-| q9 | Outcomes | Resume Competitiveness |
-| **q10** | **Outcomes** | **Job/Promotion Success ← PRIMARY OUTCOME** |
-| q11 | Outcomes | Leadership Role Advancement |
-
----
-
-## Key Findings (N = 78)
-
-**Full-sample relative importance (Table 2, R² = 0.575):**
-
-| Rank | Predictor | LMG Contribution |
-|---|---|---|
-| 1 | Leadership Skills (q3) | 17.2% |
-| 2 | Communication Skills (q2) | 16.1% |
-| 3 | Network Quality (q6) | 15.7% |
-| 4 | Technical Skills (q1) | 14.4% |
-| 5 | Time Management (q4) | 13.4% |
-| 6 | Network Access (q7) | 12.7% |
-| 7 | Network Size (q5) | 10.6% |
-
-**Subgroup findings:**
-- Tech volunteers (n=51): Leadership is the top predictor (18.4%)
-- Non-Tech volunteers (n=27): Technical literacy is the top predictor (21.7%) — exploratory
-- Students (n=46): Leadership is the top predictor (23.3%)
-
-**SEM model fit** (Skill_Development + Networking → Career_Outcomes):
-CFI = 0.975, RMSEA = 0.039 — run on full private dataset by Muskaan.
-
----
-
-## Interpreting Results
-
-**`output/relative_importance_results.csv`** — primary output; predictor ranking by LMG contribution
-**`output/sem_fit_indices.csv`** — CFI, RMSEA, SRMR for construct validity
-**`output/subgroup_analysis_results.csv`** — LMG rankings by demographic group
-
-Step 4 of the pipeline prints a verification table comparing code output to the figures in the paper. Mismatches are flagged as `MISMATCH` and should be investigated before submission.
-
----
-
-## Troubleshooting
-
-**"Data file not found"** — Check `getwd()` in R; place `vector_survey_responses.csv` in the repo root.
-
-**"Package installation failed"** — Re-run `install_dependencies.R`; on Linux you may need `apt install build-essential r-base-dev`.
-
-**"Sample size too small"** — Subgroup analysis requires n ≥ 15 per group. Check that demographic columns are being parsed correctly (column 4 = career stage, column 6 = role type).
-
-**SEM returns CFI = 1.000, RMSEA = 0.000** — This happens when running on the anonymized local dataset (which has sparse data). The published SEM results (CFI = 0.975, RMSEA = 0.039) were produced on the full private dataset.
-
----
+### SEM and claim checks
+- `output/sem_fit_indices.csv`
+- `output/paper_claim_check.csv`
+- `output/session_info.txt`
 
 ## Statistical Methods
 
-| Method | Package | Purpose |
-|---|---|---|
-| LMG Relative Importance | `relaimpo` | Decomposes R² across predictors under multicollinearity |
-| Structural Equation Modeling | `lavaan` (WLSMV) | Validates latent construct structure |
-| Spearman Correlation | base R | Non-parametric association between ordinal items |
-| VIF | `car` | Multicollinearity check |
-| Partial Correlation | `ppcor` | Per-predictor effect controlling for others |
+- LMG relative importance decomposition: `relaimpo`
+- OLS diagnostics: VIF (`car`), Shapiro-Wilk, Breusch-Pagan (`lmtest`)
+- Spearman correlation matrix
+- SEM (WLSMV with ordered indicators): `lavaan`
+- Bootstrap confidence intervals for LMG contributions: `boot`
 
----
+## Reproducibility Notes
 
-## References
+- The script records full session metadata in `output/session_info.txt`.
+- All paper-claim checks are exported to `output/paper_claim_check.csv`.
+- If manuscript values differ from current outputs, update manuscript tables from exported CSV files rather than manual transcription.
 
-- Lindeman, Merenda, & Gold (1980). LMG method for relative importance
-- Grömping (2006). *relaimpo* package
-- Hu & Bentler (1999). SEM fit thresholds (CFI > 0.95, RMSEA < 0.06)
+## Interpretation Caution
 
----
+This repository is only as reproducible as the data included in `vector_survey_responses.csv`.
+If manuscript claims were computed on a different private dataset version, those claims may not reproduce from this repository alone.
 
-**Project VECTOR** | Virufy Volunteer Career Outcomes Survey
-**Last Updated:** March 2026
+## Suggested Submission Workflow
+
+1. Freeze the analysis dataset version used for submission.
+2. Run `run_all_analyses.R` on that frozen dataset.
+3. Populate manuscript numeric claims directly from output CSV files.
+4. Include this repository plus output files as supplementary material.
