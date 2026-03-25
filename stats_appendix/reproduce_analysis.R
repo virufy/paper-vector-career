@@ -25,9 +25,13 @@ for (pkg in required_pkgs) {
   }
 }
 
-# Load data
+# Load data (from local stats_appendix folder)
 cat("\n=== LOADING DATA ===\n")
-df_raw <- read.csv("vector_survey_responses_example.csv", check.names = FALSE)
+data_file <- "vector_survey_responses_example.csv"
+if (!file.exists(data_file)) {
+  stop(sprintf("Data file not found: %s\nMake sure you're running from the stats_appendix/ directory", data_file))
+}
+df_raw <- read.csv(data_file, check.names = FALSE)
 colnames(df_raw) <- make.unique(colnames(df_raw))
 colnames(df_raw)[8:18] <- paste0("q", 1:11)
 df_raw[8:18] <- lapply(df_raw[8:18], function(x) as.numeric(as.character(x)))
