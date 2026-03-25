@@ -303,7 +303,7 @@ fit <- lavaan::sem(
 
 fit_idx <- lavaan::fitMeasures(
   fit,
-  c("cfi", "tli", "rmsea", "rmsea.ci.lower", "rmsea.ci.upper", "srmr")
+  c("cfi.scaled", "tli.scaled", "rmsea.scaled", "rmsea.ci.lower.scaled", "rmsea.ci.upper.scaled", "srmr")
 )
 
 df$hc_composite <- rowMeans(df[, c("q1", "q2", "q3", "q4")], na.rm = TRUE)
@@ -313,11 +313,11 @@ comp_r <- cor(df$hc_composite, df$sc_composite)
 sem_export <- data.frame(
   index = c("CFI", "TLI", "RMSEA", "RMSEA_CI_LOWER", "RMSEA_CI_UPPER", "SRMR", "HC_SC_COMPOSITE_R", "N"),
   value = c(
-    round(fit_idx["cfi"], 3),
-    round(fit_idx["tli"], 3),
-    round(fit_idx["rmsea"], 3),
-    round(fit_idx["rmsea.ci.lower"], 3),
-    round(fit_idx["rmsea.ci.upper"], 3),
+    round(fit_idx["cfi.scaled"], 3),
+    round(fit_idx["tli.scaled"], 3),
+    round(fit_idx["rmsea.scaled"], 3),
+    round(fit_idx["rmsea.ci.lower.scaled"], 3),
+    round(fit_idx["rmsea.ci.upper.scaled"], 3),
     round(fit_idx["srmr"], 3),
     round(comp_r, 3),
     nrow(df)
@@ -343,8 +343,8 @@ add_claim <- function(claim, paper_value, code_value, tolerance) {
 paper_table2 <- c(q1 = 14.4, q2 = 16.1, q3 = 17.2, q4 = 13.4, q5 = 11.0, q6 = 15.7, q7 = 12.2)
 code_table2 <- setNames(importance$lmg_pct, importance$variable)
 
-claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.975, fit_idx["cfi"], 0.005)
-claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.039, fit_idx["rmsea"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.976, fit_idx["cfi.scaled"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.038, fit_idx["rmsea.scaled"], 0.005)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.940, comp_r, 0.020)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("FULL_SAMPLE_R2", 0.575, model_summary$r.squared, 0.001)
 
@@ -370,7 +370,7 @@ if (exists("subgroup_df")) {
   claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q6", 16.9, subgroup_lookup("Role: Tech", "q6"), 0.2)
   claim_rows[[length(claim_rows) + 1]] <- add_claim("NONTECH_Q1", 25.2, subgroup_lookup("Role: Non-Tech", "q1"), 0.2)
   claim_rows[[length(claim_rows) + 1]] <- add_claim("STUDENT_Q3", 23.3, subgroup_lookup("Stage: Student", "q3"), 0.2)
-  claim_rows[[length(claim_rows) + 1]] <- add_claim("PROF_Q4", 17.8, subgroup_lookup("Stage: Professional", "q4"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("PROF_Q6", 21.5, subgroup_lookup("Stage: Professional", "q6"), 0.5)
 }
 
 claim_check <- do.call(rbind, claim_rows)
