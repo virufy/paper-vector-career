@@ -1,19 +1,18 @@
 # Statistical Appendix
 
-Example dataset for reproducibility testing.
+Self-contained reproducible example for journal reviewers.
 
 ## Quick Start
 
-From the repository root:
-
 ```bash
-cd ..
-cp stats_appendix/vector_survey_responses_example.csv .
-Rscript --vanilla run_analysis.R
+Rscript reproduce_analysis.R
 ```
-
-Or run with real data by placing `vector_survey_responses.csv` in root directory.
 
 ## Contents
 
-- `vector_survey_responses_example.csv` — Example dataset (N=30) for demonstration
+- `reproduce_analysis.R` — Core LMG relative importance analysis
+- `vector_survey_responses_example.csv` — Example dataset (N=30)
+
+## Dependencies
+
+R packages (auto-installed if missing): relaimpo, boot, car, lmtest, psych
