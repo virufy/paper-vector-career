@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tables — From Volunteer to Vocation</title>
+  <style>
+  :root {
+    --accent: #1a3a5c;
+    --accent-light: #e8f0f8;
+    --border: #b0c4de;
+    --text: #1c1c1e;
+    --subtext: #555;
+    --row-alt: #f7f9fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    background: #fff;
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 24px 60px;
+  }
+  h1 {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--subtext);
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 36px 0 6px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 3px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 10px 0 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--accent);
+    color: #fff;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: bold;
+    border: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  tbody tr.subtotal td {
+    background: var(--accent-light);
+    font-weight: bold;
+    border-top: 2px solid var(--border);
+  }
+  tbody tr.region-header td {
+    background: #d0dff0;
+    font-weight: bold;
+    font-style: italic;
+    color: var(--accent);
+  }
+  tbody tr.grand-total td {
+    background: #c8d8ec;
+    font-weight: bold;
+    border-top: 3px double var(--accent);
+  }
+  td.rank, td.pct, td.n { text-align: center; }
+  td.bar-cell { min-width: 120px; }
+  .bar-bg {
+    background: #d9e8f5;
+    border-radius: 3px;
+    height: 14px;
+    width: 100%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .bar-fill {
+    background: var(--accent);
+    border-radius: 3px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  td.ci { font-size: 11px; color: var(--subtext); }
+  .table-note {
+    font-size: 11.5px;
+    color: var(--subtext);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .dagger { vertical-align: super; font-size: 0.8em; }
+  hr.section { border: none; border-top: 1px solid var(--border); margin: 48px 0 0; }
+</style>
+</head>
+<body>
+  <h1>From Volunteer to Vocation</h1>
+  <p class="subtitle">The Career Impact of Skill and Network Development in a Global Tech Nonprofit</p>
+  <h2>Table 1. Geography Distribution of Survey Respondents (n = 78)</h2><div class="table-wrap"><table><thead><tr><th>Region / Country</th><th>Respondents (n)</th><th>% of Sample</th></tr></thead><tbody><tr class="region-header"><strong>North America</strong></tr>
+<tr>&emsp;United States (USA)<td class="n">44</td><td class="pct">56.4%</td></tr>
+<tr>&emsp;Canada<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="subtotal">&emsp;<em>North America subtotal</em><td class="n">45</td><td class="pct">57.7%</td></tr>
+<tr class="region-header"><strong>East Asia</strong></tr>
+<tr>&emsp;Japan<td class="n">12</td><td class="pct">15.4%</td></tr>
+<tr>&emsp;South Korea<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="subtotal">&emsp;<em>East Asia subtotal</em><td class="n">13</td><td class="pct">16.7%</td></tr>
+<tr class="region-header"><strong>Middle East</strong></tr>
+<tr>&emsp;United Arab Emirates (UAE)<td class="n">10</td><td class="pct">12.8%</td></tr>
+<tr class="subtotal">&emsp;<em>Middle East subtotal</em><td class="n">10</td><td class="pct">12.8%</td></tr>
+<tr class="region-header"><strong>South & Southeast Asia</strong></tr>
+<tr>&emsp;India<td class="n">2</td><td class="pct">2.6%</td></tr>
+<tr>&emsp;Pakistan<td class="n">4</td><td class="pct">5.1%</td></tr>
+<tr>&emsp;Indonesia<td class="n">2</td><td class="pct">2.6%</td></tr>
+<tr>&emsp;Singapore<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr>&emsp;Bangladesh<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="subtotal">&emsp;<em>South & Southeast Asia subtotal</em><td class="n">10</td><td class="pct">12.8%</td></tr>
+<tr class="region-header"><strong>Latin America</strong></tr>
+<tr>&emsp;Brazil<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr>&emsp;Colombia<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr>&emsp;Argentina<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr>&emsp;Venezuela<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="subtotal">&emsp;<em>Latin America subtotal</em><td class="n">4</td><td class="pct">5.1%</td></tr>
+<tr class="region-header"><strong>Oceania</strong></tr>
+<tr>&emsp;Australia<td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="subtotal">&emsp;<em>Oceania subtotal</em><td class="n">1</td><td class="pct">1.3%</td></tr>
+<tr class="grand-total"><strong>Total country mentions</strong> <span style="font-weight:normal;font-size:11px">(multi-select permitted)</span><td class="n">83</td><td class="pct">&mdash;</td></tr>
+<tr class="grand-total"><strong>Unique respondents</strong><td class="n">78</td><td class="pct">100.0%</td></tr></tbody></table><p class="table-note"><em>Note.</em> n = 78 complete cases. Respondents were permitted to select multiple countries
+  of residence to reflect global mobility; therefore the sum of country mentions
+  (83) exceeds the number of unique respondents. Percentages are based on
+  unique respondents (N = 78).</p></div>
+
+<hr class='section'>
+
+<h2>Table 2. Relative Importance of Predictors for Career Outcomes (N = 78, R&#178; = 0.575)</h2><div class="table-wrap"><table>
+<thead><tr><th>Rank</th><th>Predictor (Survey Item)</th><th>Interpretation</th><th>Contribution to R²</th><th>95% Bootstrap CI</th></tr></thead>
+<tbody>
+<tr><td class="rank">1</td><td>Leadership Skills (q3)</td><td>Guiding cross-functional teams across time zones</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:100%"></span></span> 17.2%</td><td class="ci">[9.3%, 26.5%]</td></tr>
+<tr><td class="rank">2</td><td>Communication Skills (q2)</td><td>Writing, presentations, and verbal clarity</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:94%"></span></span> 16.1%</td><td class="ci">[9.8%, 23.8%]</td></tr>
+<tr><td class="rank">3</td><td>Network Insights (q6)</td><td>Quality of professional advice from global peers</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:92%"></span></span> 15.7%</td><td class="ci">[10.2%, 22.9%]</td></tr>
+<tr><td class="rank">4</td><td>Technical Skills (q1)</td><td>Programming, data analysis, cloud infrastructure</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:84%"></span></span> 14.4%</td><td class="ci">[6.8%, 29.2%]</td></tr>
+<tr><td class="rank">5</td><td>Time Management (q4)</td><td>Asynchronous coordination and self-regulation</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:78%"></span></span> 13.4%</td><td class="ci">[8.5%, 20.8%]</td></tr>
+<tr><td class="rank">6</td><td>Network Access (q7)</td><td>Entry into new professional communities</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:74%"></span></span> 12.7%</td><td class="ci">[7.4%, 20.1%]</td></tr>
+<tr><td class="rank">7</td><td>Network Size (q5)</td><td>Volume of new professional connections</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:62%"></span></span> 10.6%</td><td class="ci">[7.0%, 15.1%]</td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> LMG method (Lindeman et al., 1980) via the <em>relaimpo</em> package in R. Bootstrap confidence intervals based on 1,000 resamples (seed = 42). Outcome variable: q10 (securing a new job, promotion, or academic placement).</p></div>
+
+<hr class='section'>
+
+<h2>Table 3. Primary Career Drivers by Subgroup</h2><div class="table-wrap"><table>
+<thead><tr><th>Subgroup</th><th>n</th><th>Primary Career Driver</th><th>Contribution to R²</th><th>Subgroup R²</th></tr></thead>
+<tbody>
+<tr><td>Technical Volunteers</td><td class="n">51</td><td>Leadership Skills (q3)</td><td class="pct">18.4%</td><td class="pct">56.2%</td></tr>
+<tr><td>Non-Technical Volunteers†</td><td class="n">27</td><td>Technical Skills (q1)</td><td class="pct">21.7%</td><td class="pct">72.9%</td></tr>
+<tr><td>Students</td><td class="n">46</td><td>Leadership Skills (q3)</td><td class="pct">23.3%</td><td class="pct">70.9%</td></tr>
+<tr><td>Established Professionals</td><td class="n">32</td><td>Network Insights (q6)</td><td class="pct">21.5%</td><td class="pct">48.4%</td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> † Exploratory; n &lt; 30. Results should be interpreted with caution and replicated in larger samples before drawing strong conclusions.</p></div>
+
+<hr class='section'>
+
+<h2>Table 4. Summary of Thematic Analysis Results (n = 47)</h2><div class="table-wrap"><table>
+<thead><tr><th>Theme</th><th>Relative Frequency</th><th>Approx. Respondents</th></tr></thead>
+<tbody>
+<tr><td>Interpersonal &amp; Communication Development</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:100%"></span></span> 64%</td><td class="n">30</td></tr>
+<tr><td>Technical Skill Acquisition</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:89%"></span></span> 57%</td><td class="n">27</td></tr>
+<tr><td>Professional Network Expansion</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:86%"></span></span> 55%</td><td class="n">26</td></tr>
+<tr><td>Career Signaling &amp; Marketability</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:70%"></span></span> 45%</td><td class="n">21</td></tr>
+<tr><td>Leadership &amp; Ownership Development</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:56%"></span></span> 36%</td><td class="n">17</td></tr>
+<tr><td>Career Identity Clarification</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:33%"></span></span> 21%</td><td class="n">10</td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> Themes were retained if cited by ≥15% of respondents (n ≥ 7). Because respondents frequently identified multiple growth areas within a single response, total frequencies exceed 100%. Thematic analysis followed Braun &amp; Clarke (2006).</p></div>
+
+<hr class='section'>
+
+<h2>Table 5. Convergence of Qualitative Themes and Quantitative Predictors</h2><div class="table-wrap"><table>
+<thead><tr><th>Qualitative Theme</th><th>Prevalence</th><th>Quantitative Counterpart</th><th>LMG Contribution</th></tr></thead>
+<tbody>
+<tr><td>Interpersonal &amp; Communication Development</td><td class="pct">64%</td><td>Communication Skills (q2)</td><td>16.1%</td></tr>
+<tr><td>Technical Skill Acquisition</td><td class="pct">57%</td><td>Technical Skills (q1)</td><td>14.4%&thinsp;;&thinsp;21.7% (non-technical subgroup)</td></tr>
+<tr><td>Professional Network Expansion</td><td class="pct">55%</td><td>Network Insights (q6) + Network Access (q7)</td><td>15.7% + 12.7%</td></tr>
+<tr><td>Career Signaling &amp; Marketability</td><td class="pct">45%</td><td>Career Outcomes Construct (q8–q11)</td><td>&#8212;</td></tr>
+<tr><td>Leadership &amp; Ownership Development</td><td class="pct">36%</td><td>Leadership Skills (q3)</td><td>17.2%</td></tr>
+<tr><td>Career Identity Clarification</td><td class="pct">21%</td><td><em>No quantitative counterpart</em></td><td><em>Qualitative-only insight</em></td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> LMG contributions reflect the full sample (N = 78). Career Identity Clarification has no corresponding Likert-scale item, representing a dimension of career development captured exclusively through the qualitative strand.</p></div>
+
+<hr class='section'><h2>Appendix Table. Demographic Overview of Survey Respondents (N = 78)</h2><div class="table-wrap"><table>
+<thead><tr><th>Role Type</th><th>Student</th><th>Professional</th><th>Total</th></tr></thead>
+<tbody>
+<tr><td>Non-Technical</td><td class="n">20 (25.6%)</td><td class="n">19 (24.4%)</td><td class="n">39 (50.0%)</td></tr>
+<tr><td>Technical</td><td class="n">12 (15.4%)</td><td class="n">27 (34.6%)</td><td class="n">39 (50.0%)</td></tr>
+<tr><td><strong>Total</strong></td><td class="n">32 (41.0%)</td><td class="n">46 (59.0%)</td><td class="n"><strong>78 (100.0%)</strong></td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> Classification: Technical roles include App Development, Cloud Engineering, ML Engineering, Web Development, Data Science, and related. Non-Technical roles include Grant Writing/Research, HR, Legal, Marketing, Operations, and related. Career stage: Student includes undergraduate, graduate, and doctoral students. Professional includes all respondents with paid work experience.</p></div>
+</body>
+</html>
