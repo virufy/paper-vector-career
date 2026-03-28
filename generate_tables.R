@@ -619,23 +619,24 @@ APPENDIX_HTML <- paste0(
 )
 
 # ════════════════════════════════════════════════════════════════════════════
-# ASSEMBLE AND WRITE HTML
+# WRITE INDIVIDUAL HTML FILES
 # ════════════════════════════════════════════════════════════════════════════
 
-body_html <- paste(
-  TABLE1_HTML,
-  "<hr class='section'>",
-  TABLE2_HTML,
-  "<hr class='section'>",
-  TABLE3_HTML,
-  "<hr class='section'>",
-  TABLE4_HTML,
-  "<hr class='section'>",
-  TABLE5_HTML,
-  APPENDIX_HTML,
-  sep = "\n\n"
+# Remove the old combined file if it exists
+if (file.exists("output/tables.html")) file.remove("output/tables.html")
+
+tables <- list(
+  list(file = "output/table1_geography.html",    html = TABLE1_HTML),
+  list(file = "output/table2_lmg_full.html",     html = TABLE2_HTML),
+  list(file = "output/table3_subgroups.html",    html = TABLE3_HTML),
+  list(file = "output/table4_thematic.html",     html = TABLE4_HTML),
+  list(file = "output/table5_convergence.html",  html = TABLE5_HTML),
+  list(file = "output/appendix_demographics.html", html = sub("^<hr[^>]*>", "", APPENDIX_HTML))
 )
 
-out_path <- "output/tables.html"
-writeLines(page_wrap(body_html), out_path)
-cat(sprintf("\nDone. Output written to: %s\n", out_path))
+for (t in tables) {
+  writeLines(page_wrap(t$html), t$file)
+  cat(sprintf("  Written: %s\n", t$file))
+}
+
+cat(sprintf("\nDone. %d files written to output/\n", length(tables)))

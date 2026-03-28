@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Tables — From Volunteer to Vocation</title>
+  <style>
+  :root {
+    --accent: #1a3a5c;
+    --accent-light: #e8f0f8;
+    --border: #b0c4de;
+    --text: #1c1c1e;
+    --subtext: #555;
+    --row-alt: #f7f9fc;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Georgia", "Times New Roman", serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+    background: #fff;
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 0 24px 60px;
+  }
+  h1 {
+    font-size: 1.3em;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--subtext);
+    margin-bottom: 40px;
+  }
+  h2 {
+    font-size: 1em;
+    font-weight: bold;
+    margin: 36px 0 6px;
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 3px;
+  }
+  .table-wrap {
+    overflow-x: auto;
+    margin: 10px 0 4px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+  }
+  thead th {
+    background: var(--accent);
+    color: #fff;
+    text-align: left;
+    padding: 8px 10px;
+    font-weight: bold;
+    border: 1px solid var(--border);
+  }
+  tbody td {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: var(--row-alt); }
+  tbody tr.subtotal td {
+    background: var(--accent-light);
+    font-weight: bold;
+    border-top: 2px solid var(--border);
+  }
+  tbody tr.region-header td {
+    background: #d0dff0;
+    font-weight: bold;
+    font-style: italic;
+    color: var(--accent);
+  }
+  tbody tr.grand-total td {
+    background: #c8d8ec;
+    font-weight: bold;
+    border-top: 3px double var(--accent);
+  }
+  td.rank, td.pct, td.n { text-align: center; }
+  td.bar-cell { min-width: 120px; }
+  .bar-bg {
+    background: #d9e8f5;
+    border-radius: 3px;
+    height: 14px;
+    width: 100%;
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .bar-fill {
+    background: var(--accent);
+    border-radius: 3px;
+    height: 14px;
+    display: inline-block;
+    vertical-align: top;
+  }
+  td.ci { font-size: 11px; color: var(--subtext); }
+  .table-note {
+    font-size: 11.5px;
+    color: var(--subtext);
+    margin-top: 6px;
+    line-height: 1.5;
+  }
+  .dagger { vertical-align: super; font-size: 0.8em; }
+  hr.section { border: none; border-top: 1px solid var(--border); margin: 48px 0 0; }
+</style>
+</head>
+<body>
+  <h1>From Volunteer to Vocation</h1>
+  <p class="subtitle">The Career Impact of Skill and Network Development in a Global Tech Nonprofit</p>
+  <h2>Table 4. Summary of Thematic Analysis Results (n = 47)</h2><div class="table-wrap"><table>
+<thead><tr><th>Theme</th><th>Relative Frequency</th><th>Approx. Respondents</th></tr></thead>
+<tbody>
+<tr><td>Interpersonal &amp; Communication Development</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:100%"></span></span> 64%</td><td class="n">30</td></tr>
+<tr><td>Technical Skill Acquisition</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:89%"></span></span> 57%</td><td class="n">27</td></tr>
+<tr><td>Professional Network Expansion</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:86%"></span></span> 55%</td><td class="n">26</td></tr>
+<tr><td>Career Signaling &amp; Marketability</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:70%"></span></span> 45%</td><td class="n">21</td></tr>
+<tr><td>Leadership &amp; Ownership Development</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:56%"></span></span> 36%</td><td class="n">17</td></tr>
+<tr><td>Career Identity Clarification</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:33%"></span></span> 21%</td><td class="n">10</td></tr>
+</tbody>
+</table><p class="table-note"><em>Note.</em> Themes were retained if cited by ≥15% of respondents (n ≥ 7). Because respondents frequently identified multiple growth areas within a single response, total frequencies exceed 100%. Thematic analysis followed Braun &amp; Clarke (2006).</p></div>
+</body>
+</html>
