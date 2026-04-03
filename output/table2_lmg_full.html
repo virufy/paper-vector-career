@@ -3,22 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tables — From Volunteer to Vocation</title>
+  <title>Table 2 — From Volunteer to Vocation</title>
   <style>
-  :root {
-    --accent: #1a3a5c;
-    --accent-light: #e8f0f8;
-    --border: #b0c4de;
-    --text: #1c1c1e;
-    --subtext: #555;
-    --row-alt: #f7f9fc;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: "Georgia", "Times New Roman", serif;
+    font-family: "Times New Roman", serif;
     font-size: 14px;
     line-height: 1.6;
-    color: var(--text);
+    color: #000;
     background: #fff;
     max-width: 960px;
     margin: 40px auto;
@@ -29,103 +21,88 @@
     font-weight: bold;
     text-align: center;
     margin-bottom: 6px;
-    color: var(--accent);
   }
   .subtitle {
     text-align: center;
     font-size: 0.9em;
-    color: var(--subtext);
+    color: #444;
     margin-bottom: 40px;
   }
   h2 {
     font-size: 1em;
     font-weight: bold;
     margin: 36px 0 6px;
-    color: var(--accent);
-    border-bottom: 2px solid var(--accent);
+    border-bottom: 2px solid #000;
     padding-bottom: 3px;
   }
-  .table-wrap {
-    overflow-x: auto;
-    margin: 10px 0 4px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+  .table-wrap { overflow-x: auto; margin: 10px 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
-    background: var(--accent);
+    background: #000;
     color: #fff;
     text-align: left;
     padding: 8px 10px;
     font-weight: bold;
-    border: 1px solid var(--border);
+    border: 1px solid #999;
   }
   tbody td {
     padding: 6px 10px;
-    border: 1px solid var(--border);
+    border: 1px solid #ccc;
     vertical-align: top;
   }
-  tbody tr:nth-child(even) td { background: var(--row-alt); }
-  tbody tr.subtotal td {
-    background: var(--accent-light);
-    font-weight: bold;
-    border-top: 2px solid var(--border);
-  }
-  tbody tr.region-header td {
-    background: #d0dff0;
+  tbody tr:nth-child(even) td { background: #f5f5f5; }
+  tbody tr.group-header td {
+    background: #d8d8d8;
     font-weight: bold;
     font-style: italic;
-    color: var(--accent);
+    color: #000;
   }
   tbody tr.grand-total td {
-    background: #c8d8ec;
+    background: #c8c8c8;
     font-weight: bold;
-    border-top: 3px double var(--accent);
+    border-top: 3px double #000;
   }
-  td.rank, td.pct, td.n { text-align: center; }
-  td.bar-cell { min-width: 120px; }
-  .bar-bg {
-    background: #d9e8f5;
-    border-radius: 3px;
-    height: 14px;
-    width: 100%;
-    display: inline-block;
-    vertical-align: middle;
-  }
-  .bar-fill {
-    background: var(--accent);
-    border-radius: 3px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: top;
-  }
-  td.ci { font-size: 11px; color: var(--subtext); }
+  td.rank, td.pct, td.ci { text-align: center; }
   .table-note {
     font-size: 11.5px;
-    color: var(--subtext);
+    color: #444;
     margin-top: 6px;
     line-height: 1.5;
   }
-  .dagger { vertical-align: super; font-size: 0.8em; }
-  hr.section { border: none; border-top: 1px solid var(--border); margin: 48px 0 0; }
-</style>
+  </style>
 </head>
 <body>
   <h1>From Volunteer to Vocation</h1>
   <p class="subtitle">The Career Impact of Skill and Network Development in a Global Tech Nonprofit</p>
-  <h2>Table 2. Relative Importance of Predictors for Career Outcomes (N = 78, R&#178; = 0.575)</h2><div class="table-wrap"><table>
-<thead><tr><th>Rank</th><th>Predictor (Survey Item)</th><th>Interpretation</th><th>Contribution to R²</th><th>95% Bootstrap CI</th></tr></thead>
-<tbody>
-<tr><td class="rank">1</td><td>Leadership Skills (q3)</td><td>Guiding cross-functional teams across time zones</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:100%"></span></span> 17.2%</td><td class="ci">[9.3%, 26.5%]</td></tr>
-<tr><td class="rank">2</td><td>Communication Skills (q2)</td><td>Writing, presentations, and verbal clarity</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:94%"></span></span> 16.1%</td><td class="ci">[9.8%, 23.8%]</td></tr>
-<tr><td class="rank">3</td><td>Network Insights (q6)</td><td>Quality of professional advice from global peers</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:92%"></span></span> 15.7%</td><td class="ci">[10.2%, 22.9%]</td></tr>
-<tr><td class="rank">4</td><td>Technical Skills (q1)</td><td>Programming, data analysis, cloud infrastructure</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:84%"></span></span> 14.4%</td><td class="ci">[6.8%, 29.2%]</td></tr>
-<tr><td class="rank">5</td><td>Time Management (q4)</td><td>Asynchronous coordination and self-regulation</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:78%"></span></span> 13.4%</td><td class="ci">[8.5%, 20.8%]</td></tr>
-<tr><td class="rank">6</td><td>Network Access (q7)</td><td>Entry into new professional communities</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:74%"></span></span> 12.7%</td><td class="ci">[7.4%, 20.1%]</td></tr>
-<tr><td class="rank">7</td><td>Network Size (q5)</td><td>Volume of new professional connections</td><td class="bar-cell"><span class="bar-bg"><span class="bar-fill" style="width:62%"></span></span> 10.6%</td><td class="ci">[7.0%, 15.1%]</td></tr>
-</tbody>
-</table><p class="table-note"><em>Note.</em> LMG method (Lindeman et al., 1980) via the <em>relaimpo</em> package in R. Bootstrap confidence intervals based on 1,000 resamples (seed = 42). Outcome variable: q10 (securing a new job, promotion, or academic placement).</p></div>
+
+  <h2>Table 2. Relative Importance of Predictors for Career Outcomes (N = 78, R&#178; = 0.575)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Predictor (Survey Item)</th>
+          <th>Interpretation</th>
+          <th>Contribution to R²</th>
+          <th>95% Bootstrap CI</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="group-header"><td colspan="5"><strong>Human Capital (Skills)</strong></td></tr>
+        <tr><td class="rank">1</td><td>Leadership Skills (q3)</td><td>Guiding cross-functional teams across time zones</td><td class="pct">17.2%</td><td class="ci">[9.3%, 26.5%]</td></tr>
+        <tr><td class="rank">2</td><td>Communication Skills (q2)</td><td>Writing, presentations, and verbal clarity</td><td class="pct">16.1%</td><td class="ci">[9.8%, 23.8%]</td></tr>
+        <tr><td class="rank">4</td><td>Technical Skills (q1)</td><td>Programming, data analysis, cloud infrastructure</td><td class="pct">14.4%</td><td class="ci">[6.8%, 29.2%]</td></tr>
+        <tr><td class="rank">5</td><td>Time Management (q4)</td><td>Asynchronous coordination and self-regulation</td><td class="pct">13.4%</td><td class="ci">[8.5%, 20.8%]</td></tr>
+
+        <tr class="group-header"><td colspan="5"><strong>Social Capital (Network)</strong></td></tr>
+        <tr><td class="rank">3</td><td>Network Insights (q6)</td><td>Quality of professional advice from global peers</td><td class="pct">15.7%</td><td class="ci">[10.2%, 22.9%]</td></tr>
+        <tr><td class="rank">6</td><td>Network Access (q7)</td><td>Entry into new professional communities</td><td class="pct">12.7%</td><td class="ci">[7.4%, 20.1%]</td></tr>
+        <tr><td class="rank">7</td><td>Network Size (q5)</td><td>Volume of new professional connections</td><td class="pct">10.6%</td><td class="ci">[7.0%, 15.1%]</td></tr>
+
+        <tr class="grand-total"><td colspan="3"><strong>Total</strong></td><td class="pct"><strong>100.0%</strong></td><td class="ci"></td></tr>
+      </tbody>
+    </table>
+    <p class="table-note"><em>Note.</em> LMG method (Lindeman et al., 1980) via the <em>relaimpo</em> package in R. Bootstrap confidence intervals based on 1,000 resamples (seed = 42). Outcome variable: q10 (securing a new job, promotion, or academic placement). Predictors grouped by capital type; rank reflects overall ordering.</p>
+  </div>
 </body>
 </html>
