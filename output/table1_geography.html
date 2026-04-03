@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tables — From Volunteer to Vocation</title>
+  <title>Table 1 — From Volunteer to Vocation</title>
   <style>
   :root {
     --accent: #1a3a5c;
@@ -45,15 +45,8 @@
     border-bottom: 2px solid var(--accent);
     padding-bottom: 3px;
   }
-  .table-wrap {
-    overflow-x: auto;
-    margin: 10px 0 4px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+  .table-wrap { overflow-x: auto; margin: 10px 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
     background: var(--accent);
     color: #fff;
@@ -84,68 +77,71 @@
     font-weight: bold;
     border-top: 3px double var(--accent);
   }
-  td.rank, td.pct, td.n { text-align: center; }
-  td.bar-cell { min-width: 120px; }
-  .bar-bg {
-    background: #d9e8f5;
-    border-radius: 3px;
-    height: 14px;
-    width: 100%;
-    display: inline-block;
-    vertical-align: middle;
-  }
-  .bar-fill {
-    background: var(--accent);
-    border-radius: 3px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: top;
-  }
-  td.ci { font-size: 11px; color: var(--subtext); }
+  td.n, td.pct { text-align: center; }
   .table-note {
     font-size: 11.5px;
     color: var(--subtext);
     margin-top: 6px;
     line-height: 1.5;
   }
-  .dagger { vertical-align: super; font-size: 0.8em; }
-  hr.section { border: none; border-top: 1px solid var(--border); margin: 48px 0 0; }
-</style>
+  </style>
 </head>
 <body>
   <h1>From Volunteer to Vocation</h1>
   <p class="subtitle">The Career Impact of Skill and Network Development in a Global Tech Nonprofit</p>
-  <h2>Table 1. Geography Distribution of Survey Respondents (n = 78)</h2><div class="table-wrap"><table><thead><tr><th>Region / Country</th><th>Respondents (n)</th><th>% of Sample</th></tr></thead><tbody><tr class="region-header"><strong>North America</strong></tr>
-<tr>&emsp;United States (USA)<td class="n">44</td><td class="pct">56.4%</td></tr>
-<tr>&emsp;Canada<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="subtotal">&emsp;<em>North America subtotal</em><td class="n">45</td><td class="pct">57.7%</td></tr>
-<tr class="region-header"><strong>East Asia</strong></tr>
-<tr>&emsp;Japan<td class="n">12</td><td class="pct">15.4%</td></tr>
-<tr>&emsp;South Korea<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="subtotal">&emsp;<em>East Asia subtotal</em><td class="n">13</td><td class="pct">16.7%</td></tr>
-<tr class="region-header"><strong>Middle East</strong></tr>
-<tr>&emsp;United Arab Emirates (UAE)<td class="n">10</td><td class="pct">12.8%</td></tr>
-<tr class="subtotal">&emsp;<em>Middle East subtotal</em><td class="n">10</td><td class="pct">12.8%</td></tr>
-<tr class="region-header"><strong>South & Southeast Asia</strong></tr>
-<tr>&emsp;India<td class="n">2</td><td class="pct">2.6%</td></tr>
-<tr>&emsp;Pakistan<td class="n">4</td><td class="pct">5.1%</td></tr>
-<tr>&emsp;Indonesia<td class="n">2</td><td class="pct">2.6%</td></tr>
-<tr>&emsp;Singapore<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr>&emsp;Bangladesh<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="subtotal">&emsp;<em>South & Southeast Asia subtotal</em><td class="n">10</td><td class="pct">12.8%</td></tr>
-<tr class="region-header"><strong>Latin America</strong></tr>
-<tr>&emsp;Brazil<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr>&emsp;Colombia<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr>&emsp;Argentina<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr>&emsp;Venezuela<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="subtotal">&emsp;<em>Latin America subtotal</em><td class="n">4</td><td class="pct">5.1%</td></tr>
-<tr class="region-header"><strong>Oceania</strong></tr>
-<tr>&emsp;Australia<td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="subtotal">&emsp;<em>Oceania subtotal</em><td class="n">1</td><td class="pct">1.3%</td></tr>
-<tr class="grand-total"><strong>Total country mentions</strong> <span style="font-weight:normal;font-size:11px">(multi-select permitted)</span><td class="n">83</td><td class="pct">&mdash;</td></tr>
-<tr class="grand-total"><strong>Unique respondents</strong><td class="n">78</td><td class="pct">100.0%</td></tr></tbody></table><p class="table-note"><em>Note.</em> n = 78 complete cases. Respondents were permitted to select multiple countries
-  of residence to reflect global mobility; therefore the sum of country mentions
-  (83) exceeds the number of unique respondents. Percentages are based on
-  unique respondents (N = 78).</p></div>
+
+  <h2>Table 1. Geography Distribution of Survey Respondents (n = 78)</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Region / Country</th>
+          <th>Respondents (n)</th>
+          <th>% of Sample</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="region-header"><td colspan="3"><strong>North America</strong></td></tr>
+        <tr><td>&emsp;United States (USA)</td><td class="n">44</td><td class="pct">56.4%</td></tr>
+        <tr><td>&emsp;Canada</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>North America subtotal</em></td><td class="n">45</td><td class="pct">57.7%</td></tr>
+
+        <tr class="region-header"><td colspan="3"><strong>East Asia</strong></td></tr>
+        <tr><td>&emsp;Japan</td><td class="n">12</td><td class="pct">15.4%</td></tr>
+        <tr><td>&emsp;South Korea</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>East Asia subtotal</em></td><td class="n">13</td><td class="pct">16.7%</td></tr>
+
+        <tr class="region-header"><td colspan="3"><strong>Middle East</strong></td></tr>
+        <tr><td>&emsp;United Arab Emirates (UAE)</td><td class="n">10</td><td class="pct">12.8%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>Middle East subtotal</em></td><td class="n">10</td><td class="pct">12.8%</td></tr>
+
+        <tr class="region-header"><td colspan="3"><strong>South &amp; Southeast Asia</strong></td></tr>
+        <tr><td>&emsp;India</td><td class="n">2</td><td class="pct">2.6%</td></tr>
+        <tr><td>&emsp;Pakistan</td><td class="n">4</td><td class="pct">5.1%</td></tr>
+        <tr><td>&emsp;Indonesia</td><td class="n">2</td><td class="pct">2.6%</td></tr>
+        <tr><td>&emsp;Singapore</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr><td>&emsp;Bangladesh</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>South &amp; Southeast Asia subtotal</em></td><td class="n">10</td><td class="pct">12.8%</td></tr>
+
+        <tr class="region-header"><td colspan="3"><strong>Latin America</strong></td></tr>
+        <tr><td>&emsp;Brazil</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr><td>&emsp;Colombia</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr><td>&emsp;Argentina</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr><td>&emsp;Venezuela</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>Latin America subtotal</em></td><td class="n">4</td><td class="pct">5.1%</td></tr>
+
+        <tr class="region-header"><td colspan="3"><strong>Oceania</strong></td></tr>
+        <tr><td>&emsp;Australia</td><td class="n">1</td><td class="pct">1.3%</td></tr>
+        <tr class="subtotal"><td>&emsp;<em>Oceania subtotal</em></td><td class="n">1</td><td class="pct">1.3%</td></tr>
+
+        <tr class="grand-total"><td><strong>Total country mentions</strong> <span style="font-weight:normal;font-size:11px">(multi-select permitted)</span></td><td class="n">83</td><td class="pct">&mdash;</td></tr>
+        <tr class="grand-total"><td><strong>Unique respondents</strong></td><td class="n">78</td><td class="pct">100.0%</td></tr>
+      </tbody>
+    </table>
+    <p class="table-note"><em>Note.</em> n = 78 complete cases. Respondents were permitted to select multiple countries
+    of residence to reflect global mobility; therefore the sum of country mentions
+    (83) exceeds the number of unique respondents. Percentages are based on
+    unique respondents (N = 78).</p>
+  </div>
 </body>
 </html>

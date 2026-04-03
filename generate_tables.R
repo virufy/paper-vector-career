@@ -253,7 +253,7 @@ for (region in names(region_map)) {
     if (!region_added) {
       t1_rows[[length(t1_rows) + 1]] <- list(
         cells = c(
-          sprintf('<strong>%s</strong>', region), "", ""
+          td(sprintf('<strong>%s</strong>', region), colspan = "3")
         ),
         class = "region-header"
       )
@@ -261,7 +261,7 @@ for (region in names(region_map)) {
     }
     t1_rows[[length(t1_rows) + 1]] <- list(
       cells = c(
-        sprintf('&emsp;%s', ctry),
+        td(sprintf('&emsp;%s', ctry)),
         td(as.character(n_ctry), class = "n"),
         td(pct_fmt(100 * n_ctry / N), class = "pct")
       ),
@@ -273,7 +273,7 @@ for (region in names(region_map)) {
   if (region_added) {
     t1_rows[[length(t1_rows) + 1]] <- list(
       cells = c(
-        sprintf('&emsp;<em>%s subtotal</em>', region),
+        td(sprintf('&emsp;<em>%s subtotal</em>', region)),
         td(as.character(region_n), class = "n"),
         td(pct_fmt(100 * region_n / N), class = "pct")
       ),
@@ -285,7 +285,7 @@ for (region in names(region_map)) {
 # Grand total row (mentions, not unique respondents)
 t1_rows[[length(t1_rows) + 1]] <- list(
   cells = c(
-    sprintf('<strong>Total country mentions</strong> <span style="font-weight:normal;font-size:11px">(multi-select permitted)</span>'),
+    td(sprintf('<strong>Total country mentions</strong> <span style="font-weight:normal;font-size:11px">(multi-select permitted)</span>')),
     td(as.character(total_mentions), class = "n"),
     td("&mdash;", class = "pct")
   ),
@@ -293,7 +293,7 @@ t1_rows[[length(t1_rows) + 1]] <- list(
 )
 t1_rows[[length(t1_rows) + 1]] <- list(
   cells = c(
-    "<strong>Unique respondents</strong>",
+    td("<strong>Unique respondents</strong>"),
     td(as.character(N), class = "n"),
     td("100.0%", class = "pct")
   ),
