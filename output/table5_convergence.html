@@ -3,128 +3,63 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Tables — From Volunteer to Vocation</title>
+  <title>Table 5 — From Volunteer to Vocation</title>
   <style>
-  :root {
-    --accent: #1a3a5c;
-    --accent-light: #e8f0f8;
-    --border: #b0c4de;
-    --text: #1c1c1e;
-    --subtext: #555;
-    --row-alt: #f7f9fc;
-  }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: "Georgia", "Times New Roman", serif;
+    font-family: "Times New Roman", serif;
     font-size: 14px;
     line-height: 1.6;
-    color: var(--text);
+    color: #000;
     background: #fff;
     max-width: 960px;
     margin: 40px auto;
     padding: 0 24px 60px;
   }
-  h1 {
-    font-size: 1.3em;
-    font-weight: bold;
-    text-align: center;
-    margin-bottom: 6px;
-    color: var(--accent);
-  }
-  .subtitle {
-    text-align: center;
-    font-size: 0.9em;
-    color: var(--subtext);
-    margin-bottom: 40px;
-  }
-  h2 {
-    font-size: 1em;
-    font-weight: bold;
-    margin: 36px 0 6px;
-    color: var(--accent);
-    border-bottom: 2px solid var(--accent);
-    padding-bottom: 3px;
-  }
-  .table-wrap {
-    overflow-x: auto;
-    margin: 10px 0 4px;
-  }
-  table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-  }
+  h1 { font-size: 1.3em; font-weight: bold; text-align: center; margin-bottom: 6px; }
+  .subtitle { text-align: center; font-size: 0.9em; color: #444; margin-bottom: 40px; }
+  h2 { font-size: 1em; font-weight: bold; margin: 36px 0 6px; border-bottom: 2px solid #000; padding-bottom: 3px; }
+  .table-wrap { overflow-x: auto; margin: 10px 0 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th {
-    background: var(--accent);
+    background: #000;
     color: #fff;
     text-align: left;
     padding: 8px 10px;
     font-weight: bold;
-    border: 1px solid var(--border);
+    border: 1px solid #999;
   }
-  tbody td {
-    padding: 6px 10px;
-    border: 1px solid var(--border);
-    vertical-align: top;
-  }
-  tbody tr:nth-child(even) td { background: var(--row-alt); }
-  tbody tr.subtotal td {
-    background: var(--accent-light);
-    font-weight: bold;
-    border-top: 2px solid var(--border);
-  }
-  tbody tr.region-header td {
-    background: #d0dff0;
-    font-weight: bold;
-    font-style: italic;
-    color: var(--accent);
-  }
-  tbody tr.grand-total td {
-    background: #c8d8ec;
-    font-weight: bold;
-    border-top: 3px double var(--accent);
-  }
-  td.rank, td.pct, td.n { text-align: center; }
-  td.bar-cell { min-width: 120px; }
-  .bar-bg {
-    background: #d9e8f5;
-    border-radius: 3px;
-    height: 14px;
-    width: 100%;
-    display: inline-block;
-    vertical-align: middle;
-  }
-  .bar-fill {
-    background: var(--accent);
-    border-radius: 3px;
-    height: 14px;
-    display: inline-block;
-    vertical-align: top;
-  }
-  td.ci { font-size: 11px; color: var(--subtext); }
-  .table-note {
-    font-size: 11.5px;
-    color: var(--subtext);
-    margin-top: 6px;
-    line-height: 1.5;
-  }
-  .dagger { vertical-align: super; font-size: 0.8em; }
-  hr.section { border: none; border-top: 1px solid var(--border); margin: 48px 0 0; }
-</style>
+  tbody td { padding: 6px 10px; border: 1px solid #ccc; vertical-align: top; }
+  tbody tr:nth-child(even) td { background: #f5f5f5; }
+  td.pct { text-align: center; }
+  .table-note { font-size: 11.5px; color: #444; margin-top: 6px; line-height: 1.5; }
+  </style>
 </head>
 <body>
   <h1>From Volunteer to Vocation</h1>
   <p class="subtitle">The Career Impact of Skill and Network Development in a Global Tech Nonprofit</p>
-  <h2>Table 5. Convergence of Qualitative Themes and Quantitative Predictors</h2><div class="table-wrap"><table>
-<thead><tr><th>Qualitative Theme</th><th>Prevalence</th><th>Quantitative Counterpart</th><th>LMG Contribution</th></tr></thead>
-<tbody>
-<tr><td>Interpersonal &amp; Communication Development</td><td class="pct">64%</td><td>Communication Skills (q2)</td><td>16.1%</td></tr>
-<tr><td>Technical Skill Acquisition</td><td class="pct">57%</td><td>Technical Skills (q1)</td><td>14.4%&thinsp;;&thinsp;21.7% (non-technical subgroup)</td></tr>
-<tr><td>Professional Network Expansion</td><td class="pct">55%</td><td>Network Insights (q6) + Network Access (q7)</td><td>15.7% + 12.7%</td></tr>
-<tr><td>Career Signaling &amp; Marketability</td><td class="pct">45%</td><td>Career Outcomes Construct (q8–q11)</td><td>&#8212;</td></tr>
-<tr><td>Leadership &amp; Ownership Development</td><td class="pct">36%</td><td>Leadership Skills (q3)</td><td>17.2%</td></tr>
-<tr><td>Career Identity Clarification</td><td class="pct">21%</td><td><em>No quantitative counterpart</em></td><td><em>Qualitative-only insight</em></td></tr>
-</tbody>
-</table><p class="table-note"><em>Note.</em> LMG contributions reflect the full sample (N = 78). Career Identity Clarification has no corresponding Likert-scale item, representing a dimension of career development captured exclusively through the qualitative strand.</p></div>
+
+  <h2>Table 5. Convergence of Qualitative Themes and Quantitative Predictors</h2>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Qualitative Theme</th>
+          <th>Prevalence</th>
+          <th>Quantitative Counterpart</th>
+          <th>LMG Contribution</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Interpersonal &amp; Communication Development</td><td class="pct">64%</td><td>Communication Skills (q2)</td><td>16.1%</td></tr>
+        <tr><td>Technical Skill Acquisition</td><td class="pct">57%</td><td>Technical Skills (q1)</td><td>14.4%; 21.7% (non-technical subgroup)</td></tr>
+        <tr><td>Professional Network Expansion</td><td class="pct">55%</td><td>Network Insights (q6) + Network Access (q7)</td><td>15.7% + 12.7%</td></tr>
+        <tr><td>Career Signaling &amp; Marketability</td><td class="pct">45%</td><td>Career Outcomes Construct (q8–q11)</td><td>&#8212;</td></tr>
+        <tr><td>Leadership &amp; Ownership Development</td><td class="pct">36%</td><td>Leadership Skills (q3)</td><td>17.2%</td></tr>
+        <tr><td>Career Identity Clarification</td><td class="pct">21%</td><td><em>No quantitative counterpart</em></td><td><em>Qualitative-only insight</em></td></tr>
+      </tbody>
+    </table>
+    <p class="table-note"><em>Note.</em> LMG contributions reflect the full sample (N = 78). Career Identity Clarification has no corresponding Likert-scale item, representing a dimension of career development captured exclusively through the qualitative strand.</p>
+  </div>
 </body>
 </html>
