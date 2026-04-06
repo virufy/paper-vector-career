@@ -35,7 +35,7 @@ tr <- function(cells) html_tag("tr", paste(cells, collapse = ""))
  
 # Build a full <table>: table number + italic title + rules + note
 make_table <- function(table_num, title, header, body_rows, note = NULL) {
-  head_row <- tr(sapply(header, th))
+  head_row <- tr(header)
   body_str <- paste(sapply(body_rows, tr), collapse = "\n")
   note_str <- if (!is.null(note)) {
     sprintf('<p class="tbl-note"><em>Note.</em> %s</p>', note)
