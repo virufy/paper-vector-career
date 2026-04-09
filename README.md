@@ -17,7 +17,7 @@
 
 ## Abstract
 
-This repository implements a reproducible quantitative supplement for the paper *"From Volunteer to Vocation: The Career Impact of Skill and Network Development in a Global Tech Nonprofit."* Using **relative importance analysis (LMG decomposition)**, we decompose the career-outcome variance attributable to seven skill and network predictors across 78 Virufy volunteers. The full-sample model achieves R² = 0.575, with **Leadership Skills (q3)** emerging as the strongest predictor (17.2% contribution), followed by **Communication Skills (q2)** (16.1%) and **Network Quality (q6)** (15.7%). Subgroup analyses reveal role-specific and career-stage-specific patterns, with students showing stronger leadership effects (23.3%) than professionals (10.4%). An SEM model confirms the validity of latent skill and networking constructs.
+This repository implements a reproducible quantitative supplement for the paper *"From Volunteer to Vocation: The Career Impact of Skill and Network Development in a Global Tech Nonprofit."* Using **relative importance analysis (LMG decomposition)**, we decompose the career-outcome variance attributable to seven skill and network predictors across 78 Virufy volunteers. The full-sample model achieves R² = 0.575, with **Leadership Skills (q3)** emerging as the strongest predictor (17.2% contribution), followed by **Communication Skills (q2)** (16.1%) and **Network Quality (q6)** (15.7%). Subgroup analyses reveal role-specific and career-stage-specific patterns, with students showing stronger leadership effects (23.3%) than professionals (10.4%). SEM fit is mixed but generally acceptable (CFI = 0.996, TLI = 0.994, SRMR = 0.030, RMSEA = 0.083).
 
 **Keywords:** Career Development · Volunteer Outcomes · Relative Importance Analysis · Psychometric Modeling · Tech Nonprofit
 
@@ -79,8 +79,8 @@ This supplement decomposes six months of Virufy volunteer survey data (April 202
 | Top Predictor | q3: Leadership  (17.2%) | q3: Leadership (23.3%) | q6: Network Quality (21.5%) |
 | #2 Predictor | q2: Communication (16.1%) | q4: Time Mgmt (17.1%) | q1: Technical (18.6%) |
 | #3 Predictor | q6: Network Quality (15.7%) | q2: Communication (15.3%) | q2: Communication (15.5%) |
-| **SEM CFI** | 1.000 | — | — |
-| **SEM RMSEA** | 0.000 (saturated) | — | — |
+| **SEM CFI** | 0.996 | — | — |
+| **SEM RMSEA** | 0.083 | — | — |
 
 **Role-Type Results:**
 
@@ -139,7 +139,7 @@ Rscript --vanilla run_analysis.R
 This single script:
 - **Auto-detects data source:** Uses `vector_survey_responses.csv` if available (real data), otherwise uses example data for demonstration
 - **Executes full 6-step pipeline:** Data audit → Descriptive stats → LMG analysis → Subgroup analysis → SEM → Paper claim verification
-- **Generates 17 output files:** CSV results, PNG visualizations, session metadata in the `output/` directory
+- **Generates 29 output files:** CSV/HTML tables, PNG/SVG visualizations, and session metadata in the `output/` directory
 - **Takes ~2-5 minutes** depending on your machine (bootstrap iterations: 1,000)
 
 **Output files** are written to `output/` (git-ignored, generated freshly each run):

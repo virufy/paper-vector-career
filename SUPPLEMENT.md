@@ -14,10 +14,11 @@ This supplement describes the quantitative analytical framework, model specifica
 
 ### 1.1 Population & Sample
 
-- **Source:** Virufy Global volunteer cohort (April 2025 – September 2025)
-- **Enrolled:** 112 individuals (consented)
+- **Source file in repository:** `vector_survey_responses.csv`
+- **Input rows (raw):** 80
 - **Complete cases:** 78 individuals (complete on all core Likert items *q1*–*q11*)
-- **Excluded:** 34 individuals (missing ≥1 core item; complete-case deletion)
+- **Excluded:** 2 individuals (missing ≥1 core item; complete-case deletion)
+- **Note:** Any broader recruitment totals reported in the manuscript narrative are external to this public repository dataset.
 
 ### 1.2 Primary Outcome
 
@@ -58,11 +59,11 @@ where $\epsilon_i \sim N(0, \sigma^2)$ under classical assumptions.
 |-----------|--------|-----------------|
 | *N* | 78 | Complete-case sample |
 | R² | 0.5750 | Model explains 57.5% of job-success variance |
-| Adj. R² | 0.5429 | Adjusted for 7 predictors |
-| *F*-statistic | 17.886 | *p* < 0.001 *** (omnibus test) |
+| Adj. R² | 0.5325 | Adjusted for 7 predictors |
+| *F*-statistic | 13.529 | *p* < 0.001 *** (omnibus test) |
 | Max VIF | 4.71 | Multicollinearity acceptable (all VIF < 5) |
-| Shapiro-Wilk *p* | — | Residual normality check |
-| Breusch-Pagan *p* | — | Heteroscedasticity check |
+| Shapiro-Wilk *p* | 3.56e-05 | Residual normality rejected |
+| Breusch-Pagan *p* | 0.973 | No heteroscedasticity evidence |
 
 ### 2.3 LMG Relative Importance Decomposition
 
@@ -157,13 +158,13 @@ Structural Path:
 
 | Index | Value | Target | Status |
 |-------|-------|--------|--------|
-| CFI | 1.000 | > 0.95 | ✓ |
-| TLI | 1.001 | > 0.95 | ✓ |
-| RMSEA | 0.000 | < 0.06 | ✓ |
-| *90% CI* | [0.000, 0.009] | — | ✓ |
+| CFI | 0.996 | > 0.95 | ✓ |
+| TLI | 0.994 | > 0.95 | ✓ |
+| RMSEA | 0.083 | < 0.08 | ⚠ borderline |
+| *90% CI* | [0.028, 0.127] | — | ⚠ |
 | SRMR | 0.030 | < 0.08 | ✓ |
 
-**Interpretation:** All indices exceed recommended thresholds (Hu & Bentler 1999). The model fits the data exceptionally well, suggesting the three latent constructs are appropriately specified.
+**Interpretation:** CFI/TLI/SRMR indicate good fit, while RMSEA is above conventional strict cutoffs. Treat SEM fit as acceptable-but-mixed rather than uniformly excellent.
 
 ### 4.4 Latent Factor Correlations
 
