@@ -4,8 +4,7 @@
 #
 # Figure order matches document order:
 #   Fig 1 (§4.1) – Spearman Correlation Matrix
-#   Fig 2 (§4.2) – Career ROI Pathway (LMG full-sample)
-#   Fig 3 (§4.3) – Subgroup Comparison (Cross-Training Effect)
+#   Fig 2 (§4.3) – Subgroup Comparison (Cross-Training Effect)
 ################################################################################
 
 user_lib <- path.expand("~/R/library")
@@ -95,67 +94,10 @@ fig1 <- ggplot(cor_long, aes(x = x, y = y, fill = val)) +
 save_fig(fig1, "output/fig1_correlation_matrix", width = 9, height = 7)
 
 # ════════════════════════════════════════════════════════════════════════════
-# FIGURE 2 – Career ROI Pathway / LMG Full Sample  (§4.2)
+# FIGURE 2 – Subgroup Comparison / Cross-Training Effect  (§4.3)
 # ════════════════════════════════════════════════════════════════════════════
 
-cat("  Building Figure 2: Career ROI pathway...\n")
-
-lmg <- read.csv("output/relative_importance_results.csv", stringsAsFactors = FALSE)
-lmg <- lmg[order(lmg$lmg_pct), ]   # ascending → top predictor at top after coord_flip
-
-label_full <- c(
-  q1 = "Technical Skills\n(Programming, Data Analysis)",
-  q2 = "Communication Skills\n(Writing, Presentations)",
-  q3 = "Leadership Skills\n(Guiding Cross-Functional Teams)",
-  q4 = "Time Management\n(Async Coordination)",
-  q5 = "Network Size\n(Volume of Connections)",
-  q6 = "Network Insights\n(Quality of Professional Advice)",
-  q7 = "Network Access\n(Professional Communities)"
-)
-lmg$label_full <- label_full[lmg$variable]
-lmg$category   <- ifelse(lmg$variable %in% c("q5", "q6", "q7"),
-                          "Social Capital (Network)", "Human Capital (Skills)")
-lmg$variable   <- factor(lmg$variable, levels = lmg$variable)
-
-cat_colors <- c("Human Capital (Skills)"   = ACCENT,
-                "Social Capital (Network)" = "#2e7d9c")
-
-fig2 <- ggplot(lmg, aes(x = variable, y = lmg_pct, fill = category)) +
-  geom_col(width = 0.65) +
-  geom_errorbar(aes(ymin = ci_lower, ymax = ci_upper),
-                width = 0.25, linewidth = 0.6, color = "#444") +
-  geom_text(aes(label = sprintf("%.1f%%", lmg_pct)),
-            hjust = -0.2, size = 3.4, fontface = "bold", color = "#222") +
-  scale_x_discrete(labels = setNames(lmg$label_full, as.character(lmg$variable))) +
-  scale_y_continuous(limits = c(0, 30),
-                     labels = function(x) paste0(x, "%"),
-                     expand = c(0, 0)) +
-  scale_fill_manual(values = cat_colors, name = "Capital Type") +
-  coord_flip() +
-  labs(x = NULL,
-       y = "Contribution to R\u00b2 (LMG Method)",
-       caption = "N = 78. R\u00b2 = 57.5%. Error bars: 95% bootstrap CI (1,000 resamples, seed = 42).") +
-  theme_minimal(base_size = 11) +
-  theme(
-    axis.text.y        = element_text(size = 9, lineheight = 1.1, color = "#222"),
-    axis.text.x        = element_text(size = 9, color = "#555"),
-    axis.title.x       = element_text(size = 10, color = "#333", margin = margin(t = 8)),
-    panel.grid.major.y = element_blank(),
-    panel.grid.minor   = element_blank(),
-    legend.position    = "bottom",
-    legend.title       = element_text(size = 9, face = "bold"),
-    legend.text        = element_text(size = 9),
-    plot.caption       = element_text(size = 9, color = "#555", hjust = 0),
-    plot.background    = element_rect(fill = "white", color = NA)
-  )
-
-save_fig(fig2, "output/fig2_career_roi_pathway", width = 9, height = 5.5)
-
-# ════════════════════════════════════════════════════════════════════════════
-# FIGURE 3 – Subgroup Comparison / Cross-Training Effect  (§4.3)
-# ════════════════════════════════════════════════════════════════════════════
-
-cat("  Building Figure 3: Subgroup comparison...\n")
+cat("  Building Figure 2: Subgroup comparison...\n")
 
 sub <- read.csv("output/subgroup_analysis_results.csv", stringsAsFactors = FALSE)
 sub <- sub[sub$group %in% c("Role: Tech", "Role: Non-Tech",
@@ -192,7 +134,7 @@ item_colors <- c(
   "Network Access"      = "#2e86c1"
 )
 
-fig3 <- ggplot(sub, aes(x = group_label, y = contribution_pct,
+fig2 <- ggplot(sub, aes(x = group_label, y = contribution_pct,
                          fill = item_label, alpha = is_top)) +
   geom_col(position = position_dodge(width = 0.8), width = 0.7) +
   geom_text(
@@ -224,6 +166,6 @@ fig3 <- ggplot(sub, aes(x = group_label, y = contribution_pct,
     plot.background    = element_rect(fill = "white", color = NA)
   )
 
-save_fig(fig3, "output/fig3_subgroup_comparison", width = 10, height = 6)
+save_fig(fig2, "output/fig3_subgroup_comparison", width = 10, height = 6)
 
-cat(sprintf("\nDone. 3 figures written to output/\n"))
+cat(sprintf("\nDone. 2 figures written to output/\n"))
