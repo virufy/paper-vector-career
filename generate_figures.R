@@ -91,7 +91,7 @@ fig1 <- ggplot(cor_long, aes(x = x, y = y, fill = val)) +
     legend.position = "right",
     plot.caption    = element_text(size = 9, color = "#555", hjust = 0),
     plot.background = element_rect(fill = "white", color = NA),
-    plot.margin     = margin(t = 42, r = 10, b = 20, l = 10)
+    plot.margin     = margin(t = 2, r = 2, b = 2, l = 2)
   )
 
 save_fig(fig1, "output/fig1_correlation_matrix", width = 9, height = 7)
@@ -153,8 +153,7 @@ fig2 <- ggplot(sub, aes(x = group_label, y = contribution_pct,
   scale_y_continuous(labels = function(x) paste0(x, "%"),
                      limits = c(0, 32), expand = c(0, 0)) +
   labs(x = NULL,
-       y = "Contribution to R\u00b2 (LMG Method)",
-       caption = "\u2020 Exploratory; n < 30. Top predictor per subgroup labelled.") +
+       y = "Contribution to R\u00b2 (LMG Method)") +
   theme_minimal(base_size = 11) +
   theme(
     axis.text.x        = element_text(size = 9, lineheight = 1.2, color = "#222"),
@@ -165,7 +164,6 @@ fig2 <- ggplot(sub, aes(x = group_label, y = contribution_pct,
     legend.position    = "right",
     legend.title       = element_text(size = 9, face = "bold"),
     legend.text        = element_text(size = 9),
-    plot.caption       = element_text(size = 9, color = "#555", hjust = 0),
     plot.background    = element_rect(fill = "white", color = NA)
   )
 
@@ -195,8 +193,7 @@ fig3 <- ggplot(lmg, aes(y = label, x = lmg_pct)) +
   ) +
   labs(
     x = "Contribution to R\u00b2 (LMG %)",
-    y = NULL,
-    caption = "Points = LMG estimate; bars = 95% bootstrap CI (1,000 resamples). Dashed line = equal-share baseline (14.3%)."
+    y = NULL
   ) +
   theme_minimal(base_size = 11) +
   theme(
@@ -204,7 +201,6 @@ fig3 <- ggplot(lmg, aes(y = label, x = lmg_pct)) +
     axis.text.x = element_text(size = 9, color = "#555"),
     panel.grid.minor = element_blank(),
     panel.grid.major.y = element_blank(),
-    plot.caption = element_text(size = 9, color = "#555", hjust = 0),
     plot.background = element_rect(fill = "white", color = NA)
   )
 
@@ -327,11 +323,9 @@ fig4 <- ggplot() +
              fill = "#ffffff", color = "#374151", size = 3, linewidth = 0.2) +
   scale_color_manual(values = c(loading = "#6b7280", path = ACCENT), guide = "none") +
   coord_cartesian(xlim = c(0.05, 0.98), ylim = c(0.08, 0.96), clip = "off") +
-  labs(caption = "Standardized SEM coefficients from WLSMV model fit on complete cases (n = 78).") +
   theme_void() +
   theme(
-    plot.caption = element_text(size = 9, color = "#555", hjust = 0),
-    plot.margin = margin(10, 30, 10, 10),
+    plot.margin = margin(2, 2, 2, 2),
     plot.background = element_rect(fill = "white", color = NA)
   )
 
