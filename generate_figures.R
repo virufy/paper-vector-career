@@ -234,14 +234,14 @@ df_sem <- df_raw[complete.cases(df_raw[question_names]), ]
 sem_model <- '
   Skill_Development =~ q1 + q2 + q3 + q4
   Networking        =~ q5 + q6 + q7
-  Career_Outcomes   =~ q9 + q10 + q11
+  Career_Outcomes   =~ q8 + q9 + q10 + q11
   Career_Outcomes   ~ Skill_Development + Networking
 '
 
 fit <- lavaan::sem(
   sem_model,
   data = df_sem,
-  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q9", "q10", "q11")
+  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11")
 )
 
 std <- lavaan::standardizedSolution(fit)
@@ -258,10 +258,10 @@ latent_nodes <- data.frame(
 )
 
 obs_nodes <- data.frame(
-  node = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q9", "q10", "q11"),
-  label = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q9", "q10", "q11"),
-  x = c(rep(0.82, 10)),
-  y = c(0.90, 0.82, 0.74, 0.66, 0.56, 0.48, 0.40, 0.30, 0.22, 0.14)
+  node = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11"),
+  label = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11"),
+  x = c(rep(0.82, 11)),
+  y = c(0.92, 0.84, 0.76, 0.68, 0.58, 0.50, 0.42, 0.32, 0.24, 0.16, 0.08)
 )
 
 edges_load <- merge(load, latent_nodes[, c("node", "x", "y")], by.x = "lhs", by.y = "node")

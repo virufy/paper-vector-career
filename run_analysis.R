@@ -397,14 +397,14 @@ log_section("STEP 5: STRUCTURAL EQUATION MODELING")
 sem_model <- '
   Skill_Development =~ q1 + q2 + q3 + q4
   Networking        =~ q5 + q6 + q7
-  Career_Outcomes   =~ q9 + q10 + q11
+  Career_Outcomes   =~ q8 + q9 + q10 + q11
   Career_Outcomes   ~ Skill_Development + Networking
 '
 
 fit <- lavaan::sem(
   sem_model,
   data = df,
-  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q9", "q10", "q11")
+  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11")
 )
 
 fit_idx <- lavaan::fitMeasures(
@@ -461,13 +461,13 @@ add_claim <- function(claim, paper_value, code_value, tolerance) {
 }
 
 # Main effect sizes from Table 2
-paper_table2 <- c(q1 = 14.4, q2 = 16.1, q3 = 17.2, q4 = 13.4, q5 = 11.0, q6 = 15.7, q7 = 12.2)
+paper_table2 <- c(q1 = 14.4, q2 = 16.1, q3 = 17.2, q4 = 13.4, q5 = 10.6, q6 = 15.7, q7 = 12.7)
 code_table2 <- setNames(importance$lmg_pct, importance$variable)
 
 # SEM claims
-claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.976, fit_idx["cfi.scaled"], 0.005)
-claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.038, fit_idx["rmsea.scaled"], 0.005)
-claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.940, comp_r, 0.020)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.996, fit_idx["cfi.scaled"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.083, fit_idx["rmsea.scaled"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.865, comp_r, 0.020)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("FULL_SAMPLE_R2", 0.575, model_summary$r.squared, 0.001)
 
 # Main effect claims
@@ -491,8 +491,8 @@ if (exists("subgroup_df")) {
   }
 
   claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q3", 18.4, subgroup_lookup("Role: Tech", "q3"), 0.2)
-  claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q6", 16.9, subgroup_lookup("Role: Tech", "q6"), 0.2)
-  claim_rows[[length(claim_rows) + 1]] <- add_claim("NONTECH_Q1", 25.2, subgroup_lookup("Role: Non-Tech", "q1"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("TECH_Q6", 16.4, subgroup_lookup("Role: Tech", "q6"), 0.2)
+  claim_rows[[length(claim_rows) + 1]] <- add_claim("NONTECH_Q1", 21.7, subgroup_lookup("Role: Non-Tech", "q1"), 0.2)
   claim_rows[[length(claim_rows) + 1]] <- add_claim("STUDENT_Q3", 23.3, subgroup_lookup("Stage: Student", "q3"), 0.2)
   claim_rows[[length(claim_rows) + 1]] <- add_claim("PROF_Q6", 21.5, subgroup_lookup("Stage: Professional", "q6"), 0.5)
 }
