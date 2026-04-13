@@ -267,11 +267,13 @@ ell_poly <- function(cx, cy, rx, ry, n = 200) {
 }
 
 # ── layout  (canvas: x in [0,10], y in [0,7]) ───────────────────────────────
-SK  <- list(cx = 3.8, cy = 4.85, rx = 1.00, ry = 1.22)   # Skill Development
-NT  <- list(cx = 3.8, cy = 1.72, rx = 1.00, ry = 0.90)   # Networking
-CO  <- list(cx = 7.1, cy = 3.28, rx = 1.02, ry = 1.44)   # Career Outcomes
+# Oval sizes reduced and CO shifted left so no shape overlaps any box.
+# Horizontal gaps: left ~0.70 units, right ~0.45 units.
+SK  <- list(cx = 3.8, cy = 4.83, rx = 0.84, ry = 0.95)   # Skill Development
+NT  <- list(cx = 3.8, cy = 1.72, rx = 0.84, ry = 0.78)   # Networking
+CO  <- list(cx = 6.75, cy = 3.27, rx = 0.80, ry = 1.18)  # Career Outcomes
 
-BHW <- 1.22; BHH <- 0.285   # indicator box half-width / half-height
+BHW <- 1.15; BHH <- 0.275   # indicator box half-width / half-height
 
 # Left indicators (Skill + Network constructs)
 ind_L <- data.frame(
@@ -280,8 +282,8 @@ ind_L <- data.frame(
   lab = c("Technical Skills", "Communication Skills",
           "Leadership Skills", "Time Management",
           "Network Size", "Network Quality", "Network Access"),
-  cx  = 1.2,
-  cy  = c(6.15, 5.35, 4.45, 3.55,  2.48, 1.72, 0.96)
+  cx  = 1.1,
+  cy  = c(6.25, 5.38, 4.44, 3.40,  2.46, 1.72, 0.98)
 )
 
 # Right indicators (Career Outcomes construct)
@@ -290,8 +292,8 @@ ind_R <- data.frame(
   var = c("q8","q9","q10","q11"),
   lab = c("Career Impact", "Résumé\nCompetitiveness",
           "Job / Promotion\nSuccess", "Leadership\nAdvancement"),
-  cx  = 8.9,
-  cy  = c(4.72, 3.75, 2.78, 1.78)
+  cx  = 9.15,
+  cy  = c(4.88, 3.84, 2.78, 1.70)
 )
 
 # ── build arrow segments and coefficient labels ──────────────────────────────
@@ -423,7 +425,7 @@ fig4 <- ggplot() +
     aes(x = x, y = y, label = lab),
     size = 2.9, fontface = "bold", color = ACCENT
   ) +
-  coord_cartesian(xlim = c(-0.15, 10.4), ylim = c(0.55, 6.85), clip = "off") +
+  coord_cartesian(xlim = c(-0.2, 10.5), ylim = c(0.52, 6.90), clip = "off") +
   theme_void() +
   theme(
     plot.margin     = margin(4, 4, 4, 4),
