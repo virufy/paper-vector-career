@@ -207,29 +207,28 @@ fig3 <- ggplot(lmg, aes(y = label, x = lmg_pct)) +
 save_fig(fig3, "output/fig3_lmg_forest", width = 9, height = 5.6)
 
 # ════════════════════════════════════════════════════════════════════════════
-# FIGURE 2 – SEM Path Diagram (Standardized Coefficients)  (§4.1)
+# FIGURE 2 – SEM Path Diagram (Standard Academic Style)  (§4.1)
 # ════════════════════════════════════════════════════════════════════════════
 
 cat("  Building Figure 2: SEM path diagram...\n")
 
-# Rebuild the SEM model on the same mapped Likert items used by run_analysis.R
+if (!require("psych", character.only = TRUE, quietly = TRUE))
+  stop("Missing package 'psych'. Run install_dependencies.R first.")
+
 csv_file <- if (file.exists("vector_survey_responses.csv")) {
   "vector_survey_responses.csv"
 } else if (file.exists("vector_survey_responses_example.csv")) {
   "vector_survey_responses_example.csv"
 } else {
-  stop("Data file not found. Expected vector_survey_responses.csv or vector_survey_responses_example.csv")
+  stop("Data file not found.")
 }
 
 df_raw <- read.csv(csv_file, check.names = FALSE)
 colnames(df_raw) <- make.unique(colnames(df_raw))
-if (ncol(df_raw) < 18) stop("Unexpected data structure: expected at least 18 columns")
-
-likert_cols <- 8:18
-question_names <- paste0("q", 1:11)
-colnames(df_raw)[likert_cols] <- question_names
-df_raw[likert_cols] <- lapply(df_raw[likert_cols], function(x) as.numeric(as.character(x)))
-df_sem <- df_raw[complete.cases(df_raw[question_names]), ]
+if (ncol(df_raw) < 18) stop("Unexpected data structure.")
+colnames(df_raw)[8:18] <- paste0("q", 1:11)
+df_raw[8:18] <- lapply(df_raw[8:18], function(x) as.numeric(as.character(x)))
+df_sem <- df_raw[complete.cases(df_raw[paste0("q", 1:11)]), ]
 
 sem_model <- '
   Skill_Development =~ q1 + q2 + q3 + q4
@@ -237,98 +236,200 @@ sem_model <- '
   Career_Outcomes   =~ q8 + q9 + q10 + q11
   Career_Outcomes   ~ Skill_Development + Networking
 '
+fit <- lavaan::sem(sem_model, data = df_sem,
+  ordered = paste0("q", 1:11))
 
-fit <- lavaan::sem(
-  sem_model,
-  data = df_sem,
-  ordered = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11")
-)
+std  <- lavaan::standardizedSolution(fit)
+load <- std[std$op == "=~", c("lhs", "rhs", "est.std")]
+spth <- std[std$op == "~"  & std$lhs == "Career_Outcomes", c("rhs", "est.std")]
 
-std <- lavaan::standardizedSolution(fit)
-load <- std[std$op == "=~" & std$lhs %in% c("Skill_Development", "Networking", "Career_Outcomes"),
-            c("lhs", "rhs", "est.std")]
-path <- std[std$op == "~" & std$lhs == "Career_Outcomes" & std$rhs %in% c("Skill_Development", "Networking"),
-            c("lhs", "rhs", "est.std")]
+a_sk <- suppressWarnings(psych::alpha(df_sem[, c("q1","q2","q3","q4")])$total$raw_alpha)
+a_nt <- suppressWarnings(psych::alpha(df_sem[, c("q5","q6","q7")])$total$raw_alpha)
+a_co <- suppressWarnings(psych::alpha(df_sem[, c("q8","q9","q10","q11")])$total$raw_alpha)
+r2   <- as.numeric(lavaan::inspect(fit, "r2")["Career_Outcomes"])
 
-latent_nodes <- data.frame(
-  node = c("Skill_Development", "Networking", "Career_Outcomes"),
-  label = c("Skill Development", "Networking", "Career Outcomes"),
-  x = c(0.22, 0.22, 0.22),
-  y = c(0.78, 0.50, 0.22)
-)
-
-obs_nodes <- data.frame(
-  node = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11"),
-  label = c("q1", "q2", "q3", "q4", "q5", "q6", "q7", "q8", "q9", "q10", "q11"),
-  x = c(rep(0.82, 11)),
-  y = c(0.92, 0.84, 0.76, 0.68, 0.58, 0.50, 0.42, 0.32, 0.24, 0.16, 0.08)
-)
-
-edges_load <- merge(load, latent_nodes[, c("node", "x", "y")], by.x = "lhs", by.y = "node")
-edges_load <- merge(edges_load, obs_nodes[, c("node", "x", "y")], by.x = "rhs", by.y = "node", suffixes = c("_from", "_to"))
-
-edges_path <- merge(path, latent_nodes[, c("node", "x", "y")], by.x = "rhs", by.y = "node")
-edges_path <- merge(edges_path, latent_nodes[latent_nodes$node == "Career_Outcomes", c("node", "x", "y")],
-                    by.x = "lhs", by.y = "node", suffixes = c("_from", "_to"))
-
-edges <- rbind(
-  data.frame(x_from = edges_load$x_from, y_from = edges_load$y_from,
-             x_to = edges_load$x_to, y_to = edges_load$y_to,
-             est = edges_load$est.std, type = "loading"),
-  data.frame(x_from = edges_path$x_from, y_from = edges_path$y_from,
-             x_to = edges_path$x_to, y_to = edges_path$y_to,
-             est = edges_path$est.std, type = "path")
-)
-
-edges$mx <- (edges$x_from + edges$x_to) / 2
-edges$my <- (edges$y_from + edges$y_to) / 2
-edges$lx <- edges$mx
-edges$ly <- edges$my
-
-# Nudge structural path labels so they do not overlap near the same destination node.
-path_idx <- which(edges$type == "path")
-if (length(path_idx) > 0) {
-  if (length(path_idx) >= 1) {
-    edges$lx[path_idx[1]] <- edges$mx[path_idx[1]] - 0.04
-    edges$ly[path_idx[1]] <- edges$my[path_idx[1]] + 0.028
-  }
-  if (length(path_idx) >= 2) {
-    edges$lx[path_idx[2]] <- edges$mx[path_idx[2]] - 0.04
-    edges$ly[path_idx[2]] <- edges$my[path_idx[2]] - 0.028
-  }
+# ── geometry helpers ────────────────────────────────────────────────────────
+# Point on ellipse boundary in direction (dx,dy) from center
+ell_pt <- function(cx, cy, rx, ry, dx, dy) {
+  th <- atan2(dy / ry, dx / rx)
+  c(cx + rx * cos(th), cy + ry * sin(th))
+}
+# Point on rectangle boundary in direction (dx,dy) from center
+box_pt <- function(cx, cy, hw, hh, dx, dy) {
+  s <- min(if (dx != 0) hw / abs(dx) else Inf,
+           if (dy != 0) hh / abs(dy) else Inf)
+  c(cx + s * dx, cy + s * dy)
+}
+# Filled ellipse polygon
+ell_poly <- function(cx, cy, rx, ry, n = 200) {
+  t <- seq(0, 2 * pi, length.out = n + 1)
+  data.frame(x = cx + rx * cos(t), y = cy + ry * sin(t))
 }
 
+# ── layout  (canvas: x in [0,10], y in [0,7]) ───────────────────────────────
+SK  <- list(cx = 3.8, cy = 4.85, rx = 1.00, ry = 1.22)   # Skill Development
+NT  <- list(cx = 3.8, cy = 1.72, rx = 1.00, ry = 0.90)   # Networking
+CO  <- list(cx = 7.1, cy = 3.28, rx = 1.02, ry = 1.44)   # Career Outcomes
+
+BHW <- 1.22; BHH <- 0.285   # indicator box half-width / half-height
+
+# Left indicators (Skill + Network constructs)
+ind_L <- data.frame(
+  lhs = c(rep("Skill_Development", 4), rep("Networking", 3)),
+  var = c("q1","q2","q3","q4","q5","q6","q7"),
+  lab = c("Technical Skills", "Communication Skills",
+          "Leadership Skills", "Time Management",
+          "Network Size", "Network Quality", "Network Access"),
+  cx  = 1.2,
+  cy  = c(6.15, 5.35, 4.45, 3.55,  2.48, 1.72, 0.96)
+)
+
+# Right indicators (Career Outcomes construct)
+ind_R <- data.frame(
+  lhs = "Career_Outcomes",
+  var = c("q8","q9","q10","q11"),
+  lab = c("Career Impact", "Résumé\nCompetitiveness",
+          "Job / Promotion\nSuccess", "Leadership\nAdvancement"),
+  cx  = 8.9,
+  cy  = c(4.72, 3.75, 2.78, 1.78)
+)
+
+# ── build arrow segments and coefficient labels ──────────────────────────────
+seg_df <- data.frame()
+lbl_df <- data.frame()
+
+# Left indicators → Skill / Networking ovals
+for (k in seq_len(nrow(ind_L))) {
+  r   <- ind_L[k, ]
+  lat <- if (r$lhs == "Skill_Development") SK else NT
+  lam <- load[load$lhs == r$lhs & load$rhs == r$var, "est.std"]
+  p1  <- box_pt(r$cx, r$cy, BHW, BHH, 1, 0)
+  p2  <- ell_pt(lat$cx, lat$cy, lat$rx, lat$ry, p1[1] - lat$cx, p1[2] - lat$cy)
+  seg_df <- rbind(seg_df,
+    data.frame(x=p1[1], y=p1[2], xe=p2[1], ye=p2[2], type="meas"))
+  # Label at 40% from box toward oval, nudged above
+  lx <- p1[1] + 0.40 * (p2[1] - p1[1])
+  ly <- p1[2] + 0.40 * (p2[2] - p1[2]) + 0.17
+  lbl_df <- rbind(lbl_df,
+    data.frame(x=lx, y=ly, lab=sprintf("%.2f", lam), sty="plain"))
+}
+
+# Career Outcomes oval → right indicators
+for (k in seq_len(nrow(ind_R))) {
+  r   <- ind_R[k, ]
+  lam <- load[load$lhs == "Career_Outcomes" & load$rhs == r$var, "est.std"]
+  p1  <- ell_pt(CO$cx, CO$cy, CO$rx, CO$ry, r$cx - CO$cx, r$cy - CO$cy)
+  p2  <- box_pt(r$cx, r$cy, BHW, BHH, -1, 0)
+  seg_df <- rbind(seg_df,
+    data.frame(x=p1[1], y=p1[2], xe=p2[1], ye=p2[2], type="meas"))
+  lx <- p1[1] + 0.40 * (p2[1] - p1[1])
+  ly <- p1[2] + 0.40 * (p2[2] - p1[2]) + 0.17
+  lbl_df <- rbind(lbl_df,
+    data.frame(x=lx, y=ly, lab=sprintf("%.2f", lam), sty="plain"))
+}
+
+# Structural: Skill_Development → Career_Outcomes
+b_sk <- spth[spth$rhs == "Skill_Development", "est.std"]
+p1   <- ell_pt(SK$cx, SK$cy, SK$rx, SK$ry, CO$cx - SK$cx, CO$cy - SK$cy)
+p2   <- ell_pt(CO$cx, CO$cy, CO$rx, CO$ry, SK$cx - CO$cx, SK$cy - CO$cy)
+seg_df <- rbind(seg_df,
+  data.frame(x=p1[1], y=p1[2], xe=p2[1], ye=p2[2], type="struct"))
+lbl_df <- rbind(lbl_df, data.frame(
+  x = (p1[1]+p2[1])/2 - 0.12,
+  y = (p1[2]+p2[2])/2 + 0.30,
+  lab = sprintf("\u03b2 = %.3f", b_sk), sty = "bold"))
+
+# Structural: Networking → Career_Outcomes
+b_nt <- spth[spth$rhs == "Networking", "est.std"]
+p1   <- ell_pt(NT$cx, NT$cy, NT$rx, NT$ry, CO$cx - NT$cx, CO$cy - NT$cy)
+p2   <- ell_pt(CO$cx, CO$cy, CO$rx, CO$ry, NT$cx - CO$cx, NT$cy - CO$cy)
+seg_df <- rbind(seg_df,
+  data.frame(x=p1[1], y=p1[2], xe=p2[1], ye=p2[2], type="struct"))
+lbl_df <- rbind(lbl_df, data.frame(
+  x = (p1[1]+p2[1])/2 - 0.12,
+  y = (p1[2]+p2[2])/2 - 0.30,
+  lab = sprintf("\u03b2 = %.3f", b_nt), sty = "bold"))
+
+# ── polygons & labels ────────────────────────────────────────────────────────
+ell_df <- rbind(
+  cbind(ell_poly(SK$cx, SK$cy, SK$rx, SK$ry), grp = "SK"),
+  cbind(ell_poly(NT$cx, NT$cy, NT$rx, NT$ry), grp = "NT"),
+  cbind(ell_poly(CO$cx, CO$cy, CO$rx, CO$ry), grp = "CO")
+)
+ell_df$x <- as.numeric(ell_df$x); ell_df$y <- as.numeric(ell_df$y)
+
+all_ind <- rbind(ind_L[, c("var","lab","cx","cy")],
+                 ind_R[, c("var","lab","cx","cy")])
+
+lat_lbl <- data.frame(
+  x   = c(SK$cx, NT$cx, CO$cx),
+  y   = c(SK$cy, NT$cy, CO$cy),
+  lab = c(
+    sprintf("Skill\nDevelopment\n\u03b1 = %.3f", a_sk),
+    sprintf("Networking\n\u03b1 = %.3f",          a_nt),
+    sprintf("Career\nOutcomes\nR\u00b2 = %.3f",   r2)
+  )
+)
+
+# ── plot ────────────────────────────────────────────────────────────────────
 fig4 <- ggplot() +
-  geom_curve(
-    data = subset(edges, type == "loading"),
-    aes(x = x_from, y = y_from, xend = x_to, yend = y_to, color = type),
-    curvature = 0.08,
-    arrow = grid::arrow(length = grid::unit(0.14, "cm")),
-    linewidth = 0.8
+  # measurement arrows (drawn first; shapes overlap their tails cleanly)
+  geom_segment(
+    data  = subset(seg_df, type == "meas"),
+    aes(x = x, y = y, xend = xe, yend = ye),
+    arrow = arrow(length = unit(0.13, "cm"), type = "closed"),
+    color = "#555555", linewidth = 0.55
   ) +
-  geom_curve(
-    data = subset(edges, type == "path"),
-    aes(x = x_from, y = y_from, xend = x_to, yend = y_to, color = type),
-    curvature = 0.18,
-    arrow = grid::arrow(length = grid::unit(0.14, "cm")),
-    linewidth = 0.8
+  # structural arrows (thicker, accent colour)
+  geom_segment(
+    data  = subset(seg_df, type == "struct"),
+    aes(x = x, y = y, xend = xe, yend = ye),
+    arrow = arrow(length = unit(0.18, "cm"), type = "closed"),
+    color = ACCENT, linewidth = 1.1
   ) +
-  geom_label(data = edges, aes(x = lx, y = ly, label = sprintf("%.2f", est)),
-             size = 3, color = "#1f2937", fontface = "bold",
-             fill = "white", linewidth = 0.15,
-             label.padding = grid::unit(0.08, "lines")) +
-  geom_label(data = latent_nodes, aes(x = x, y = y, label = label),
-             fill = "#edf2f7", color = "#1f2937", size = 3.3, fontface = "bold", linewidth = 0.2) +
-  geom_label(data = obs_nodes, aes(x = x, y = y, label = label),
-             fill = "#ffffff", color = "#374151", size = 3, linewidth = 0.2) +
-  scale_color_manual(values = c(loading = "#6b7280", path = ACCENT), guide = "none") +
-  coord_cartesian(xlim = c(0.05, 0.98), ylim = c(0.08, 0.96), clip = "off") +
+  # latent variable ovals (drawn over arrow tails for clean edges)
+  geom_polygon(
+    data  = ell_df,
+    aes(x = x, y = y, group = grp),
+    fill = "#dbeafe", color = "#1f2937", linewidth = 0.55
+  ) +
+  # indicator boxes (drawn over arrow endpoints for clean edges)
+  geom_rect(
+    data  = all_ind,
+    aes(xmin = cx - BHW, xmax = cx + BHW, ymin = cy - BHH, ymax = cy + BHH),
+    fill = "#ffffff", color = "#374151", linewidth = 0.45
+  ) +
+  # indicator text
+  geom_text(
+    data  = all_ind,
+    aes(x = cx, y = cy, label = lab),
+    size = 2.55, color = "#1f2937", lineheight = 0.92
+  ) +
+  # latent variable labels (bold)
+  geom_text(
+    data  = lat_lbl,
+    aes(x = x, y = y, label = lab),
+    size = 2.85, fontface = "bold", color = "#1f2937", lineheight = 1.1
+  ) +
+  # loading coefficients
+  geom_text(
+    data  = subset(lbl_df, sty == "plain"),
+    aes(x = x, y = y, label = lab),
+    size = 2.55, color = "#333333"
+  ) +
+  # structural β labels (bold, accent)
+  geom_text(
+    data  = subset(lbl_df, sty == "bold"),
+    aes(x = x, y = y, label = lab),
+    size = 2.9, fontface = "bold", color = ACCENT
+  ) +
+  coord_cartesian(xlim = c(-0.15, 10.4), ylim = c(0.55, 6.85), clip = "off") +
   theme_void() +
   theme(
-    plot.margin = margin(2, 2, 2, 2),
+    plot.margin     = margin(4, 4, 4, 4),
     plot.background = element_rect(fill = "white", color = NA)
   )
 
-save_fig(fig4, "output/fig2_sem_path", width = 10, height = 6)
+save_fig(fig4, "output/fig2_sem_path", width = 12, height = 7)
 
 cat(sprintf("\nDone. 4 figures written to output/\n"))
