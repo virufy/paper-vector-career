@@ -64,15 +64,18 @@ cor_long$label <- sprintf("%.2f", cor_long$val)
 # Lower triangle + diagonal: row index (from bottom) >= col index
 # y is reversed, so as.integer(y) gives position from top; row from bottom = ni+1 - as.integer(y)
 cor_long$show  <- (ni + 1L - as.integer(cor_long$y)) >= cor_long$xi
+# Adaptive text: white on dark cells, dark on light cells
+cor_long$txt_col <- ifelse(cor_long$val >= 0.72, "white", "#1a3a5c")
 
 fig1 <- ggplot(cor_long, aes(x = x, y = y, fill = val)) +
   geom_tile(color = "white", linewidth = 0.4) +
   geom_text(data = subset(cor_long, show),
-            aes(label = label),
-            size = 2.8, color = "white", fontface = "bold") +
-  scale_fill_gradient2(
-    low = "#d73027", mid = "#fee090", high = ACCENT,
-    midpoint = 0.7, limits = c(0.5, 1),
+            aes(label = label, color = txt_col),
+            size = 2.8, fontface = "bold") +
+  scale_color_identity() +
+  scale_fill_gradient(
+    low = "#eaf2fb", high = ACCENT,
+    limits = c(0.5, 1),
     name = "Spearman r",
     guide = guide_colorbar(barwidth = 0.8, barheight = 8, title.vjust = 1)
   ) +
@@ -199,6 +202,7 @@ fig3 <- ggplot(lmg, aes(y = label, x = lmg_pct)) +
   theme(
     axis.text.y = element_text(size = 9, color = "#222"),
     axis.text.x = element_text(size = 9, color = "#555"),
+    axis.title.x = element_text(margin = margin(t = 12)),
     panel.grid.minor = element_blank(),
     panel.grid.major.y = element_blank(),
     plot.background = element_rect(fill = "white", color = NA)
@@ -215,10 +219,10 @@ cat("  Building Figure 2: SEM path diagram...\n")
 if (!require("psych", character.only = TRUE, quietly = TRUE))
   stop("Missing package 'psych'. Run install_dependencies.R first.")
 
-csv_file <- if (file.exists("vector_survey_responses.csv")) {
-  "vector_survey_responses.csv"
-} else if (file.exists("vector_survey_responses_example.csv")) {
-  "vector_survey_responses_example.csv"
+csv_file <- if (file.exists("input/vector_survey_responses.csv")) {
+  "input/vector_survey_responses.csv"
+} else if (file.exists("statistical_appendix/vector_survey_responses_example.csv")) {
+  "statistical_appendix/vector_survey_responses_example.csv"
 } else {
   stop("Data file not found.")
 }
@@ -270,8 +274,8 @@ ell_poly <- function(cx, cy, rx, ry, n = 200) {
 # Oval sizes reduced and CO shifted left so no shape overlaps any box.
 # Horizontal gaps: left ~0.70 units, right ~0.45 units.
 SK  <- list(cx = 3.8, cy = 4.83, rx = 0.84, ry = 0.95)   # Skill Development
-NT  <- list(cx = 3.8, cy = 1.72, rx = 0.84, ry = 0.78)   # Networking
-CO  <- list(cx = 6.75, cy = 3.27, rx = 0.80, ry = 1.18)  # Career Outcomes
+NT  <- list(cx = 3.8, cy = 1.72, rx = 0.84, ry = 0.95)   # Networking
+CO  <- list(cx = 6.75, cy = 3.27, rx = 0.84, ry = 0.95)  # Career Outcomes
 
 BHW <- 1.15; BHH <- 0.275   # indicator box half-width / half-height
 
@@ -325,7 +329,8 @@ for (k in seq_len(nrow(ind_R))) {
   seg_df <- rbind(seg_df,
     data.frame(x=p1[1], y=p1[2], xe=p2[1], ye=p2[2], type="meas"))
   lx <- p1[1] + 0.40 * (p2[1] - p1[1])
-  ly <- p1[2] + 0.40 * (p2[2] - p1[2]) + 0.17
+  # Larger nudge (0.25) to keep labels clear of the arrow line
+  ly <- p1[2] + 0.40 * (p2[2] - p1[2]) + 0.25
   lbl_df <- rbind(lbl_df,
     data.frame(x=lx, y=ly, lab=sprintf("%.2f", lam), sty="plain"))
 }

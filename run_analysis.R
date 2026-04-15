@@ -16,8 +16,8 @@
 #   6. Automated paper claim verification
 #
 # Data Configuration:
-#   - If vector_survey_responses.csv exists in root: uses real data
-#   - Otherwise: uses vector_survey_responses_example.csv for demonstration
+#   - If input/vector_survey_responses.csv exists: uses real data
+#   - Otherwise: uses statistical_appendix/vector_survey_responses_example.csv for demonstration
 #
 # Output: 17 files in output/ directory (CSV, PNG, TXT)
 ################################################################################
@@ -64,19 +64,19 @@ cat("╚════════════════════════
 
 cat("\nPreparing data source...\n")
 
-csv_file <- if (file.exists("vector_survey_responses.csv")) {
-  "vector_survey_responses.csv"
-} else if (file.exists("vector_survey_responses_example.csv")) {
-  "vector_survey_responses_example.csv"
+csv_file <- if (file.exists("input/vector_survey_responses.csv")) {
+  "input/vector_survey_responses.csv"
+} else if (file.exists("statistical_appendix/vector_survey_responses_example.csv")) {
+  "statistical_appendix/vector_survey_responses_example.csv"
 } else {
-  stop("Data file not found. Expected: vector_survey_responses.csv or vector_survey_responses_example.csv")
+  stop("Data file not found. Expected: input/vector_survey_responses.csv or statistical_appendix/vector_survey_responses_example.csv")
 }
 
-if (csv_file == "vector_survey_responses.csv") {
-  cat("✓ Using REAL DATA: vector_survey_responses.csv\n")
+if (csv_file == "input/vector_survey_responses.csv") {
+  cat("✓ Using REAL DATA: input/vector_survey_responses.csv\n")
   data_source <- "REAL"
 } else {
-  cat("✓ Using EXAMPLE DATA: vector_survey_responses_example.csv\n")
+  cat("✓ Using EXAMPLE DATA: statistical_appendix/vector_survey_responses_example.csv\n")
   cat("  (For reproducible demonstration. Replace with real data for full analysis.)\n")
   data_source <- "EXAMPLE"
 }

@@ -23,7 +23,7 @@ for (pkg in required_pkgs) {
 # Load data
 data_file <- "vector_survey_responses_example.csv"
 if (!file.exists(data_file)) {
-  stop("Data file not found. Run from stats_appendix/ directory.")
+  stop("Data file not found. Run from statistical_appendix/ directory.")
 }
 
 cat("\n=== Loading Data ===\n")

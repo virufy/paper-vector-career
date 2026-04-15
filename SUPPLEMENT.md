@@ -14,7 +14,7 @@ This supplement describes the quantitative analytical framework, model specifica
 
 ### 1.1 Population & Sample
 
-- **Source file in repository:** `vector_survey_responses.csv`
+- **Source file in repository:** `input/vector_survey_responses.csv`
 - **Input rows (raw):** 80
 - **Complete cases:** 78 individuals (complete on all core Likert items *q1*–*q11*)
 - **Excluded:** 2 individuals (missing ≥1 core item; complete-case deletion)

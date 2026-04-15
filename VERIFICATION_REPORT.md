@@ -26,7 +26,7 @@ This report documents a fresh rerun of the full analysis pipeline and compares c
 
 | Metric | Value |
 |--------|-------|
-| Input file | `vector_survey_responses.csv` |
+| Input file | `input/vector_survey_responses.csv` |
 | Total rows | 80 |
 | Core-complete rows | 78 |
 | Excluded rows (core missing) | 2 |

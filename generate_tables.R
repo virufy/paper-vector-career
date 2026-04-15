@@ -235,7 +235,7 @@ page_wrap <- function(body_html, title = "Tables — From Volunteer to Vocation"
  
 cat("  Building Table 1: Geography...\n")
  
-df_raw <- read.csv("vector_survey_responses.csv", check.names = FALSE,
+df_raw <- read.csv("input/vector_survey_responses.csv", check.names = FALSE,
                    stringsAsFactors = FALSE)
 colnames(df_raw) <- make.unique(colnames(df_raw))
  
