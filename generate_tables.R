@@ -384,7 +384,7 @@ var_labels <- c(
   q3 = "Leadership Skills (q3)",
   q4 = "Time Management (q4)",
   q5 = "Network Size (q5)",
-  q6 = "Network Insights (q6)",
+  q6 = "Network Quality (q6)",
   q7 = "Network Access (q7)"
 )
 interpretations <- c(
@@ -543,7 +543,7 @@ conv <- data.frame(
   quant_counterpart = c(
     "Communication Skills (q2)",
     "Technical Skills (q1)",
-    "Network Insights (q6) + Network Access (q7)",
+    "Network Quality (q6) + Network Access (q7)",
     "Career Outcomes Construct (q8&ndash;q11)",
     "Leadership Skills (q3)",
     "<em>No quantitative counterpart</em>"
