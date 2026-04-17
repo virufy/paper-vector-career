@@ -12,6 +12,7 @@ Rscript reproduce_analysis.R
 
 - `reproduce_analysis.R` — Core LMG relative importance analysis
 - `vector_survey_responses_example.csv` — Example dataset (N=30)
+- `vector_survey_responses_anonymized.csv` — Full anonymized survey dataset with organization/author placeholders
 
 ## Dependencies
 

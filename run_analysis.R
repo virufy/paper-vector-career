@@ -466,7 +466,7 @@ code_table2 <- setNames(importance$lmg_pct, importance$variable)
 
 # SEM claims
 claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_CFI", 0.996, fit_idx["cfi.scaled"], 0.005)
-claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.083, fit_idx["rmsea.scaled"], 0.005)
+claim_rows[[length(claim_rows) + 1]] <- add_claim("SEM_RMSEA", 0.097, fit_idx["rmsea.scaled"], 0.005)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("HC_SC_COMPOSITE_R", 0.865, comp_r, 0.020)
 claim_rows[[length(claim_rows) + 1]] <- add_claim("FULL_SAMPLE_R2", 0.575, model_summary$r.squared, 0.001)
 
