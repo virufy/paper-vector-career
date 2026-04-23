@@ -3,7 +3,7 @@
 **Study:** From Volunteer to Vocation: The Career Impact of Skill and Network Development in a Global Tech Nonprofit
 
 **Repository:** github.com/virufy/paper-career-supplement  
-**Date Generated:** 2026-04-09  
+**Date Generated:** 2026-04-23 (updated from 2026-04-09)  
 **Reproducible Script:** `run_analysis.R`
 
 ---
@@ -15,8 +15,8 @@ This report documents a fresh rerun of the full analysis pipeline and compares c
 - Pipeline rerun status: **PASS** (exit code 0)
 - Output regeneration: **PASS** (all expected CSV/plot files regenerated)
 - Main full-sample OLS and LMG findings: **REPRODUCED**
-- SEM headline values in manuscript: **REPRODUCED**, with mixed-fit interpretation needed
-- Participant-flow narrative alignment: **NEEDS CLARIFICATION**
+- SEM headline values in manuscript: **NEEDS UPDATE** — RMSEA in manuscript (0.083) does not match code output (0.097)
+- Participant-flow narrative alignment: **VERIFIED** — 78 complete cases (anonymized dataset pre-excludes 2 incomplete rows)
 
 ---
 
@@ -104,29 +104,29 @@ From `output/subgroup_analysis_results.csv`:
 
 From `output/sem_fit_indices.csv`:
 
-| Index | Code Value |
-|-------|------------|
-| CFI | 0.996 |
-| TLI | 0.994 |
-| RMSEA | 0.083 |
-| RMSEA 90% CI | [0.028, 0.127] |
-| SRMR | 0.030 |
-| HC-SC composite *r* | 0.865 |
+| Index               | Code Value     | Manuscript says | Status                       |
+| ------------------- | -------------- | --------------- | ---------------------------- |
+| CFI                 | 0.994          | 0.996           | update needed                |
+| TLI                 | 0.992          | 0.994           | update needed                |
+| RMSEA               | **0.097**      | 0.083           | **update needed — critical** |
+| RMSEA 90% CI        | [0.056, 0.134] | [0.028, 0.127]  | update needed                |
+| SRMR                | 0.032          | 0.030           | update needed                |
+| HC-SC composite *r* | 0.865          | 0.865           | ✓ correct                    |
 
-**Status:** Manuscript headline SEM values (CFI/TLI/SRMR/RMSEA) are reproduced in current run.
+**Status:** RMSEA mismatch confirmed. Manuscript must be updated to report RMSEA = 0.097 before submission. See SUBMISSION_AUDIT.md for exact replacement text.
 
-**Interpretation caution:** RMSEA is above strict cutoffs while CFI/TLI/SRMR are strong; describe fit as mixed/acceptable rather than uniformly excellent.
+**Interpretation:** RMSEA = 0.097 is above the strict 0.08 cutoff; CFI/TLI/SRMR are strong. Describe fit as mixed but acceptable (Hu & Bentler, 1999).
 
 ---
 
 ## 5. Automated Claim Check Snapshot
 
-From `output/paper_claim_check.csv`:
+From `output/paper_claim_check.csv` (rerun 2026-04-23):
 
-- MATCH: 9 claims
-- MISMATCH: 7 claims
+- MATCH: 16/16 claims
+- MISMATCH: 0
 
-Most mismatches are due to stale paper-value targets in the CSV rather than current PDF headline numbers. This file should be synchronized to the manuscript revision used for submission.
+All LMG, subgroup, R², and composite-*r* claims reproduce exactly. The one outstanding issue is the SEM RMSEA value in the manuscript body text (see Section 4 above) — that is a manuscript edit, not a code discrepancy.
 
 ---
 
