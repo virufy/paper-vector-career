@@ -16,7 +16,7 @@
 #   6. Automated paper claim verification
 #
 # Data Configuration:
-#   - If vector_survey_responses_anonymized.csv exists: uses anonymized data
+#   - If input/vector_survey_responses.csv exists: uses anonymized data
 #   - Otherwise: uses vector_survey_responses_example.csv for demonstration
 #
 # Output: 17 files in output/ directory (CSV, PNG, TXT)
@@ -64,20 +64,20 @@ cat("╚════════════════════════
 
 cat("\nPreparing data source...\n")
 
-csv_file <- if (file.exists("vector_survey_responses_anonymized.csv")) {
-  "vector_survey_responses_anonymized.csv"
+csv_file <- if (file.exists("input/vector_survey_responses.csv")) {
+  "input/vector_survey_responses.csv"
 } else if (file.exists("vector_survey_responses_example.csv")) {
   "vector_survey_responses_example.csv"
 } else {
-  stop("Data file not found. Expected: vector_survey_responses_anonymized.csv or vector_survey_responses_example.csv")
+  stop("Data file not found. Expected: input/vector_survey_responses.csv or vector_survey_responses_example.csv")
 }
 
-if (csv_file == "vector_survey_responses_anonymized.csv") {
-  cat("✓ Using ANONYMIZED DATA: vector_survey_responses_anonymized.csv\n")
+if (csv_file == "input/vector_survey_responses.csv") {
+  cat("✓ Using ANONYMIZED DATA: input/vector_survey_responses.csv\n")
   data_source <- "REAL"
 } else {
   cat("✓ Using EXAMPLE DATA: vector_survey_responses_example.csv\n")
-  cat("  (For demonstration only. Use vector_survey_responses_anonymized.csv for full results.)\n")
+  cat("  (For demonstration only. Use input/vector_survey_responses.csv for full results.)\n")
   data_source <- "EXAMPLE"
 }
 
