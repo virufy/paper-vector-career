@@ -512,6 +512,65 @@ if (mismatches > 0) {
 }
 
 ################################################################################
+# RESULTS.md — human-readable summary for reviewers
+################################################################################
+
+md <- c(
+  "# Reproducibility Results",
+  "",
+  sprintf("_Generated: %s | N = %d | Data: %s_", Sys.Date(), nrow(df), data_source),
+  "",
+  "## Claim Verification",
+  "",
+  sprintf("**%d / %d claims MATCH** (tolerance: ±0.005 for SEM indices, ±0.2 pp for LMG)",
+          matches, total),
+  "",
+  "| Claim | Paper | Reproduced | Status |",
+  "| ----- | ----- | ---------- | ------ |",
+  apply(claim_check, 1, function(r) {
+    icon <- if (r["status"] == "MATCH") "✓" else "⚠"
+    sprintf("| %s | %s | %s | %s |", r["claim"], r["paper_value"], r["code_value"], icon)
+  }),
+  "",
+  "## LMG Relative Importance (Table 2)",
+  "",
+  "| Rank | Predictor | LMG % | 95% CI |",
+  "| ---- | --------- | ----- | ------ |",
+  {
+    imp <- importance[order(-importance$lmg_pct), ]
+    mapply(function(i, row) {
+      sprintf("| %d | %s | %.1f%% | [%.1f%%, %.1f%%] |",
+              i, row$description, row$lmg_pct, row$ci_lower, row$ci_upper)
+    }, seq_len(nrow(imp)), split(imp, seq_len(nrow(imp))))
+  },
+  "",
+  "## SEM Fit Indices",
+  "",
+  "| Index | Value | Target |",
+  "| ----- | ----- | ------ |",
+  sprintf("| CFI   | %.3f | > 0.95 |", as.numeric(sem_export$value[1])),
+  sprintf("| TLI   | %.3f | > 0.95 |", as.numeric(sem_export$value[2])),
+  sprintf("| RMSEA | %.3f [90%% CI: %.3f–%.3f] | < 0.08 |",
+          as.numeric(sem_export$value[3]),
+          as.numeric(sem_export$value[4]),
+          as.numeric(sem_export$value[5])),
+  sprintf("| SRMR  | %.3f | < 0.08 |", as.numeric(sem_export$value[6])),
+  sprintf("| HC–SC composite *r* | %.3f | — |", as.numeric(sem_export$value[7])),
+  "",
+  "## Main Model Diagnostics",
+  "",
+  sprintf("- **N** = %d", nrow(df)),
+  sprintf("- **R²** = %.3f (explains %.1f%% of variance)",
+          model_summary$r.squared, model_summary$r.squared * 100),
+  sprintf("- **Adj. R²** = %.3f", model_summary$adj.r.squared),
+  sprintf("- **F** = %.3f, *p* < 0.001", unname(model_summary$fstatistic[1])),
+  sprintf("- **Max VIF** = %.2f", max(vif_values))
+)
+
+writeLines(unlist(md), "RESULTS.md")
+cat("✓ Generated: RESULTS.md\n")
+
+################################################################################
 # FINAL SUMMARY
 ################################################################################
 
