@@ -74,7 +74,7 @@ csv_file <- if (file.exists("vector_survey_responses_anonymized.csv")) {
 
 if (csv_file == "vector_survey_responses_anonymized.csv") {
   cat("✓ Using ANONYMIZED DATA: vector_survey_responses_anonymized.csv\n")
-  data_source <- "REAL"
+  data_source <- "ANONYMIZED"
 } else {
   cat("✓ Using EXAMPLE DATA: vector_survey_responses_example.csv\n")
   cat("  (For demonstration only. Use vector_survey_responses_anonymized.csv for full results.)\n")

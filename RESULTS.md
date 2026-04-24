@@ -1,6 +1,6 @@
 # Reproducibility Results
 
-_Generated: 2026-04-23 | N = 78 | Data: REAL_
+_Generated: 2026-04-23 | N = 78 | Data: ANONYMIZED_
 
 ## Claim Verification
 
